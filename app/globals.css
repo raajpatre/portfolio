@@ -31,3 +31,102 @@
     scrollbar-width: none;
   }
 }
+
+/* ─── About: Mobile / Stacked Mode ──────────────────────────────────── */
+
+/* When JS adds this class (mobile viewport or Skip clicked),
+   chapters stack normally — no min-h-screen, no pin. */
+#about-root.about-mobile .chapter {
+  min-height: auto;
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+
+/* In mobile mode, make all elements visible immediately (no GSAP) */
+#about-root.about-mobile .chapter-header,
+#about-root.about-mobile .chapter-el {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* Smooth transition for the skip action */
+.chapter-header,
+.chapter-el {
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* ─── About Page: Night Sky ──────────────────────────────────────────── */
+.about-nightsky {
+  background: linear-gradient(
+    180deg,
+    #050714 0%,
+    #0a0c1a 30%,
+    #0d1230 60%,
+    #0a0c1a 100%
+  );
+  position: relative;
+  overflow: hidden;
+}
+
+.about-nightsky::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+      1px 1px at 10% 20%,
+      rgba(255, 255, 255, 0.4) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      1px 1px at 30% 50%,
+      rgba(255, 255, 255, 0.3) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      1.5px 1.5px at 60% 15%,
+      rgba(255, 255, 255, 0.5) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      1px 1px at 80% 40%,
+      rgba(255, 255, 255, 0.3) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      1px 1px at 45% 75%,
+      rgba(255, 255, 255, 0.4) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      1.5px 1.5px at 90% 80%,
+      rgba(255, 255, 255, 0.3) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      1px 1px at 25% 90%,
+      rgba(255, 255, 255, 0.5) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      1px 1px at 70% 65%,
+      rgba(255, 255, 255, 0.3) 0%,
+      transparent 100%
+    );
+  animation: twinkle 4s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.about-nightsky > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes twinkle {
+  0% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}

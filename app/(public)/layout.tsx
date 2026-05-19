@@ -1,21 +1,16 @@
 import { ReactNode } from "react";
-import "../globals.css";
 import { Nav } from "@/components/public/Nav";
 import { Footer } from "@/components/public/Footer";
-
-export const metadata = {
-  title: "Raaj Patre | Portfolio",
-  description: "Builder. Breaker. Repeat.",
-};
+import { PageTransition } from "@/components/public/PageTransition";
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen flex flex-col bg-bg-base text-text-primary font-mono antialiased overflow-x-hidden">
-        <Nav />
-        <main className="flex-1 flex flex-col w-full">{children}</main>
-        <Footer />
-      </body>
-    </html>
+    <div className="min-h-screen flex flex-col">
+      <Nav />
+      <main className="flex-1 flex flex-col w-full">
+        <PageTransition>{children}</PageTransition>
+      </main>
+      <Footer />
+    </div>
   );
 }

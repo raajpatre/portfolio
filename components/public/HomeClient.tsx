@@ -16,8 +16,10 @@ export function HomeClient({ featuredProjects }: { featuredProjects: ProjectData
 
   return (
     <>
-      <WelcomeScreen onComplete={() => setWelcomeComplete(true)} />
-      <ParticleBackground />
+      {!welcomeComplete && (
+        <WelcomeScreen onComplete={() => setWelcomeComplete(true)} />
+      )}
+      {welcomeComplete && <ParticleBackground />}
       <Hero />
       <FeaturedProjects projects={featuredProjects} />
     </>

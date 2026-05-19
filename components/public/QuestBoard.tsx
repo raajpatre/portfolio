@@ -75,10 +75,10 @@ export function QuestBoard({ projects }: QuestBoardProps) {
       </div>
 
       {/* Grid */}
-      <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 min-h-[400px]">
+      <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 min-h-[400px]">
         <AnimatePresence mode="popLayout">
           {filteredProjects.length > 0 ? (
-            filteredProjects.map((project) => (
+            filteredProjects.map((project, index) => (
               <motion.div
                 layout
                 key={project.id}
@@ -87,7 +87,7 @@ export function QuestBoard({ projects }: QuestBoardProps) {
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3 }}
               >
-                <ProjectCard project={project} className="h-full" />
+                <ProjectCard project={project} className="h-full" priority={index < 4} />
               </motion.div>
             ))
           ) : (

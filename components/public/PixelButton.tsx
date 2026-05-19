@@ -11,7 +11,7 @@ export const PixelButton = forwardRef<HTMLButtonElement, PixelButtonProps>(
       <button
         ref={ref}
         className={cn(
-          "relative inline-flex items-center justify-center font-pixel text-[10px] sm:text-xs uppercase px-6 py-3 tracking-wider transition-transform active:scale-95 disabled:opacity-50 disabled:pointer-events-none",
+          "relative inline-flex items-center justify-center font-pixel text-[10px] sm:text-xs uppercase px-6 py-3 tracking-wider transition-transform active:scale-95 disabled:opacity-50 disabled:pointer-events-none min-h-[44px]",
           // Pixelated border via clip-path could be complex across browsers, so we use a simulated box-shadow border
           // or just standard borders with rounded-none
           "border-2 rounded-sm",

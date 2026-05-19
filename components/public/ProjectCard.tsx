@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { ExternalLink, Github, Star } from "lucide-react";
 import { StackTag } from "./StackTag";
-import { cn } from "@/lib/utils";
+import { cn, optimizeCloudinaryUrl } from "@/lib/utils";
 
 export interface ProjectData {
   id: string;
@@ -21,9 +21,10 @@ export interface ProjectData {
 interface ProjectCardProps {
   project: ProjectData;
   className?: string;
+  priority?: boolean;
 }
 
-export function ProjectCard({ project, className }: ProjectCardProps) {
+export function ProjectCard({ project, className, priority = false }: ProjectCardProps) {
   const isFeatured = project.featured;
 
   return (
@@ -48,9 +49,10 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
       <div className="relative w-full aspect-video bg-border-pixel/20 border-b-2 border-inherit">
         {project.screenshots && project.screenshots.length > 0 ? (
           <Image
-            src={project.screenshots[0]}
+            src={optimizeCloudinaryUrl(project.screenshots[0])}
             alt={project.title}
             fill
+            priority={priority}
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
@@ -86,7 +88,7 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
             <StackTag key={tag} tag={tag} />
           ))}
           {project.stack.length > 4 && (
-            <span className="text-xs font-mono text-text-primary/50">+{project.stack.length - 4}</span>
+             <span className="text-xs font-mono text-text-primary/50 flex items-center">+{project.stack.length - 4}</span>
           )}
         </div>
 
@@ -97,7 +99,7 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
               href={project.live_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-xs font-mono uppercase text-accent-teal hover:text-accent-teal/80 transition-colors"
+              className="flex items-center justify-center gap-2 text-xs font-mono uppercase text-accent-teal hover:text-accent-teal/80 transition-colors min-h-[44px] min-w-[44px]"
             >
               <ExternalLink className="w-4 h-4" />
               <span>Live</span>
@@ -108,7 +110,7 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
               href={project.repo_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-xs font-mono uppercase text-text-primary/70 hover:text-text-primary transition-colors"
+              className="flex items-center justify-center gap-2 text-xs font-mono uppercase text-text-primary/70 hover:text-text-primary transition-colors min-h-[44px] min-w-[44px]"
             >
               <Github className="w-4 h-4" />
               <span>Code</span>
