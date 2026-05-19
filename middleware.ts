@@ -64,7 +64,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Also protect API admin routes
-  if (request.nextUrl.pathname.startsWith('/api/admin')) {
+  if (request.nextUrl.pathname.startsWith('/api/admin') && !request.nextUrl.pathname.startsWith('/api/admin/login')) {
     if (!user || user.email !== process.env.ADMIN_EMAIL) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }

@@ -1,3 +1,19 @@
-export default function AdminFeedPage() {
-  return <div className="p-4">Phase 1 placeholder — admin feed</div>;
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import FeedClient from "./FeedClient";
+
+export default async function FeedPage() {
+  const supabase = createClient();
+  
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session || session.user.email !== process.env.ADMIN_EMAIL) {
+    redirect("/admin/login");
+  }
+
+  const { data: feed } = await supabase
+    .from('feed_entries')
+    .select('*')
+    .order('entry_date', { ascending: false });
+
+  return <FeedClient initialFeed={feed || []} />;
 }
