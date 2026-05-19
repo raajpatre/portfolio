@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
 import { DialogueBox } from "./DialogueBox";
 import { PixelButton } from "./PixelButton";
 
@@ -34,11 +33,11 @@ export function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
     }, 800); // Wait for exit animation
   };
 
-  if (!isVisible) return null;
-
   return (
     <AnimatePresence>
+      {isVisible && (
       <motion.div
+        key="welcome"
         className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-bg-base p-4"
         initial={{ opacity: 1 }}
         exit={{ opacity: 0, scale: 1.05 }}
@@ -88,6 +87,7 @@ export function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
           </AnimatePresence>
         </div>
       </motion.div>
+      )}
     </AnimatePresence>
   );
 }
