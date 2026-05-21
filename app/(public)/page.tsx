@@ -19,12 +19,11 @@ export default async function Home() {
   const shipped = projects.filter((p) => p.status === "shipped").length;
   const inProgress = projects.filter((p) => p.status === "in_progress").length;
   const questsCompleted = shipped;
-  const languages = new Set(projects.flatMap((p) => p.stack || [])).size;
 
   return (
     <HomeClient
       featuredProjects={featuredProjects}
-      stats={{ questsCompleted, shipped, inProgress, languages }}
+      stats={{ questsCompleted, shipped, inProgress }}
       about={{
         origin: about.origin,
         guild: about.guild,

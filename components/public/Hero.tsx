@@ -1,15 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import type { FactionEntry, GuildEntry, OriginData, SaveFileData } from "@/data/about-types";
+import type { GuildEntry, OriginData, SaveFileData } from "@/data/about-types";
 
 type HeroProps = {
   origin: OriginData;
   guild: GuildEntry;
-  factions: FactionEntry[];
   saveFile: SaveFileData;
 };
 
@@ -43,11 +42,27 @@ const SOCIALS = [
   },
 ];
 
-function StatCard({ origin, guild, factions }: { origin: OriginData; guild: GuildEntry; factions: FactionEntry[] }) {
-  const factionNames = factions
-    .slice(0, 2)
-    .map((f) => f.org.replace("GirlScript Summer of Code", "GSSoC").replace("Google GenAI Academy APEC", "GenAI Academy"))
-    .join(" · ");
+// Days since last Dec 27 → "XP earned this year"
+// Total days in current cycle → "XP to next level"
+function getBirthdayXP() {
+  const today = new Date();
+  const year = today.getFullYear();
+  // The most recent Dec 27: this year's if we're past it, else last year's
+  const thisYearsBday = new Date(year, 11, 27);
+  const lastBday = today >= thisYearsBday ? thisYearsBday : new Date(year - 1, 11, 27);
+  const nextBday = today >= thisYearsBday ? new Date(year + 1, 11, 27) : thisYearsBday;
+  const totalDays = Math.round((nextBday.getTime() - lastBday.getTime()) / 86_400_000);
+  const earned = Math.max(0, Math.round((today.getTime() - lastBday.getTime()) / 86_400_000));
+  return { earned, totalDays };
+}
+
+function StatCard({ origin, guild }: { origin: OriginData; guild: GuildEntry }) {
+  // Defer client-only date math to after mount to avoid hydration mismatch.
+  const [xp, setXp] = useState<{ earned: number; totalDays: number } | null>(null);
+  useEffect(() => {
+    setXp(getBirthdayXP());
+  }, []);
+  const pct = xp ? Math.min(100, (xp.earned / xp.totalDays) * 100) : 0;
 
   return (
     <motion.div
@@ -75,9 +90,6 @@ function StatCard({ origin, guild, factions }: { origin: OriginData; guild: Guil
         <span className="font-pixel text-[8px] text-text-muted tracking-wider self-center uppercase">Guild</span>
         <span className="font-mono text-sm text-text-primary self-center">{guild.institution}</span>
 
-        <span className="font-pixel text-[8px] text-text-muted tracking-wider self-center uppercase">Faction</span>
-        <span className="font-mono text-sm text-text-primary self-center">{factionNames}</span>
-
         <span className="font-pixel text-[8px] text-text-muted tracking-wider self-center uppercase">Status</span>
         <span className="font-mono text-sm text-text-primary self-center flex items-center gap-2">
           <span className="inline-block w-2 h-2 rounded-none bg-accent-teal shadow-[0_0_10px_#3dd6ac] animate-pulse" />
@@ -88,17 +100,19 @@ function StatCard({ origin, guild, factions }: { origin: OriginData; guild: Guil
         <span className="font-mono text-sm text-accent-gold self-center font-bold">0{origin.level}</span>
       </div>
 
-      {/* XP Bar */}
+      {/* XP Bar — 1 XP = 1 day, fills as Raaj approaches his next birthday */}
       <div className="px-4 pb-4 border-t border-border-pixel pt-3">
         <div className="flex justify-between font-pixel text-[8px] text-text-muted mb-2">
-          <span>XP TO LVL 0{origin.level + 1}</span>
-          <span className="text-accent-gold">640 / 1000</span>
+          <span>XP TO LVL {String(origin.level + 1).padStart(2, "0")}</span>
+          <span className="text-accent-gold">
+            {xp ? `${xp.earned} / ${xp.totalDays}` : "— / —"}
+          </span>
         </div>
         <div className="h-2.5 bg-bg-elevated border border-border-pixel relative overflow-hidden">
           <motion.div
             className="h-full bg-[repeating-linear-gradient(90deg,#f5c542_0_6px,#d9ad34_6px_8px)] shadow-[0_0_10px_rgba(245,197,66,0.5)]"
             initial={{ width: 0 }}
-            animate={{ width: "64%" }}
+            animate={{ width: `${pct}%` }}
             transition={{ duration: 1.4, ease: "easeOut", delay: 0.4 }}
           />
         </div>
@@ -130,7 +144,7 @@ function StatCard({ origin, guild, factions }: { origin: OriginData; guild: Guil
   );
 }
 
-export function Hero({ origin, guild, factions, saveFile }: HeroProps) {
+export function Hero({ origin, guild, saveFile }: HeroProps) {
   const [pfpError, setPfpError] = useState(false);
 
   return (
@@ -219,7 +233,7 @@ export function Hero({ origin, guild, factions, saveFile }: HeroProps) {
       </motion.div>
 
       {/* Right column — stat card */}
-      <StatCard origin={origin} guild={guild} factions={factions} />
+      <StatCard origin={origin} guild={guild} />
     </section>
   );
 }

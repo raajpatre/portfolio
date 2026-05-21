@@ -14,7 +14,6 @@ interface HomeClientProps {
     questsCompleted: number;
     shipped: number;
     inProgress: number;
-    languages: number;
   };
   about: {
     origin: OriginData;
@@ -127,7 +126,6 @@ export function HomeClient({ featuredProjects, stats, about }: HomeClientProps) 
       <Hero
         origin={about.origin}
         guild={about.guild}
-        factions={about.factions}
         saveFile={about.saveFile}
       />
       <HUD {...stats} />

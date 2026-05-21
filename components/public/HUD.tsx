@@ -6,10 +6,9 @@ interface HUDProps {
   questsCompleted: number;
   shipped: number;
   inProgress: number;
-  languages: number;
 }
 
-export function HUD({ questsCompleted, shipped, inProgress, languages }: HUDProps) {
+export function HUD({ questsCompleted, shipped, inProgress }: HUDProps) {
   const [time, setTime] = useState("");
 
   useEffect(() => {
@@ -34,7 +33,7 @@ export function HUD({ questsCompleted, shipped, inProgress, languages }: HUDProp
       </span>
       <span className="flex items-center gap-2 text-accent-violet">
         <span className="w-1.5 h-1.5 bg-accent-violet shadow-[0_0_8px_#7c6df5] inline-block" />
-        · ⚡ {languages} LANGUAGES UNLOCKED
+        · ⚡ #IT WORKS. DON&apos;T TOUCH.
       </span>
       <span className="flex items-center gap-2">
         <span className="w-1.5 h-1.5 bg-text-muted inline-block" />
