@@ -31,24 +31,44 @@ export function AboutClient() {
 
     ch1Ref.current = chapters[0];
 
-    const io = new IntersectionObserver(
+    // Two observers:
+    //  - "in" observer fires once per chapter at a low threshold so tall
+    //    sections (which can never reach 45% intersection on mobile) still
+    //    transition into view.
+    //  - "active" observer drives the chapter tracker pip highlight.
+    const inObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
+          if (!e.isIntersecting) return;
           const idx = Number((e.target as HTMLElement).dataset.chapter);
-          if (e.isIntersecting) {
-            setActive(idx);
-            if (!seenRef.current.has(idx)) {
-              seenRef.current.add(idx);
-              (e.target as HTMLElement).classList.add("in");
-            }
+          if (!seenRef.current.has(idx)) {
+            seenRef.current.add(idx);
+            (e.target as HTMLElement).classList.add("in");
           }
         });
       },
-      { threshold: [0.45], rootMargin: "-15% 0px -25% 0px" }
+      { threshold: 0.12 }
     );
 
-    chapters.forEach((c) => io.observe(c));
-    return () => io.disconnect();
+    const activeObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            setActive(Number((e.target as HTMLElement).dataset.chapter));
+          }
+        });
+      },
+      { threshold: [0.25], rootMargin: "-15% 0px -25% 0px" }
+    );
+
+    chapters.forEach((c) => {
+      inObserver.observe(c);
+      activeObserver.observe(c);
+    });
+    return () => {
+      inObserver.disconnect();
+      activeObserver.disconnect();
+    };
   }, []);
 
   // ── Parallax for chapter 1 mountain layers ─────────────────────────
