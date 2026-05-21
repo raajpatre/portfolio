@@ -312,8 +312,20 @@
 }
 
 /* Chapter 1 — Origin */
-.cs-origin { text-align: center; }
-.cs-origin .cs-chapter-inner { display: flex; flex-direction: column; align-items: center; }
+.cs-origin {
+  text-align: center;
+  background-image:
+    linear-gradient(to bottom, rgba(10, 12, 26, 0.55) 0%, rgba(10, 12, 26, 0.35) 40%, rgba(10, 12, 26, 0.85) 100%),
+    url("/about-origin-bg.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+/* The uploaded artwork already contains sky/mountains/sun — hide CSS decorations */
+.cs-origin .cs-stars-bg,
+.cs-origin .cs-moon,
+.cs-origin .cs-mountains { display: none; }
+.cs-origin .cs-chapter-inner { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 1; }
 .cs-ch-label {
   font-family: "Press Start 2P", monospace;
   font-size: 8px;
