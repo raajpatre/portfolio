@@ -98,7 +98,7 @@ export function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: [0, -2, 0], opacity: 1 }}
               transition={{ y: { duration: 1.2, repeat: Infinity, ease: "easeInOut" }, opacity: { duration: 0.5, delay: 0.2 } }}
-              className="relative w-32 h-32"
+              className="relative w-56 h-56"
             >
               {spriteError ? (
                 <div className="absolute inset-0 border-2 border-dashed border-border-pixel bg-bg-surface flex items-center justify-center">
@@ -111,7 +111,7 @@ export function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
                   src="/character/idle.png"
                   alt="Raaj character sprite"
                   fill
-                  sizes="8rem"
+                  sizes="14rem"
                   className="object-contain [image-rendering:pixelated]"
                   priority
                   onError={() => setSpriteError(true)}

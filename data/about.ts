@@ -1,120 +1,59 @@
-// ─── About Page Data ───────────────────────────────────────────────────
-// This is the ONLY file Raaj edits to update bio content.
-// No DB calls — entirely hardcoded by design.
+import "server-only";
+import { createClient } from "@/lib/supabase/server";
+import {
+  emptyAbout,
+  emptyGuild,
+  emptyOrigin,
+  emptySaveFile,
+  type AboutContent,
+  type FactionEntry,
+  type GuildEntry,
+  type OriginData,
+  type SaveFileData,
+  type StatCategory,
+} from "./about-types";
 
-export interface OriginData {
-  name: string;
-  class: string;
-  level: number;
-  bio: string;
-  location: string;
-}
-
-export interface GuildEntry {
-  institution: string;
-  role: string;
-  duration: string;
-  location: string;
-  flavor: string;
-  logo?: string;
-}
-
-export interface FactionEntry {
-  org: string;
-  role: string;
-  duration: string;
-  blurb: string;
-  /** Color class: gold | teal | violet */
-  cls: "gold" | "teal" | "violet";
-}
-
-export interface StatCategory {
-  label: string;
-  skills: string[];
-}
-
-export interface SaveFileData {
-  resumePath: string;
-  version: string;
-  lastUpdated: string;
-  /** % of XP to next level (0-100) */
-  progressPct: number;
-  estGraduation: string;
-}
-
-// ─── Chapter 1: Origin ─────────────────────────────────────────────────
-
-export const origin: OriginData = {
-  name: "Raaj Patre",
-  class: "FULL-STACK DEVELOPER",
-  level: 2,
-  bio: "Building web apps out of Bengaluru. Computer Science student at Newton School of Technology. I ship things, break things, and write READMEs about both.",
-  location: "BENGALURU, IN",
+// Re-export types so existing imports of `@/data/about` types still resolve
+// (but only on the server — client code should import from `@/data/about-types`).
+export type {
+  AboutContent,
+  FactionEntry,
+  GuildEntry,
+  OriginData,
+  SaveFileData,
+  StatCategory,
 };
 
-// ─── Chapter 2: Guild ──────────────────────────────────────────────────
+function isObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
 
-export const guild: GuildEntry = {
-  institution: "Newton School of Technology",
-  role: "Computer Science · Batch 2",
-  duration: "2024 → PRESENT",
-  location: "BENGALURU, INDIA",
-  flavor: "Where code is the spell and the compiler is the dungeon master.",
-};
+export async function getAboutContent(): Promise<AboutContent> {
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("about_content")
+      .select("origin, guild, factions, stats, save_file")
+      .eq("id", "singleton")
+      .single();
 
-// ─── Chapter 3: Factions ───────────────────────────────────────────────
+    if (error || !data) return emptyAbout;
 
-export const factions: FactionEntry[] = [
-  {
-    org: "Aayam",
-    role: "Marketing Manager",
-    duration: "AUG 2024 → PRESENT",
-    blurb: "National tech fest for Newton School of Technology.",
-    cls: "gold",
-  },
-  {
-    org: "GirlScript Summer of Code",
-    role: "Open Source Contributor",
-    duration: "SUMMER 2025",
-    blurb: "Contributing to open source under the GSSoC program.",
-    cls: "teal",
-  },
-  {
-    org: "Google GenAI Academy APEC",
-    role: "Cohort Member",
-    duration: "SUMMER 2025",
-    blurb: "AI/ML learning program via Hack2Skill.",
-    cls: "violet",
-  },
-];
-
-// ─── Chapter 4: Stats ──────────────────────────────────────────────────
-
-export const stats: StatCategory[] = [
-  {
-    label: "FRONTEND",
-    skills: ["React", "Next.js", "Tailwind CSS", "Framer Motion", "HTML", "CSS"],
-  },
-  {
-    label: "BACKEND",
-    skills: ["Node.js", "Express", "Supabase", "PostgreSQL", "REST APIs"],
-  },
-  {
-    label: "LANGUAGES",
-    skills: ["TypeScript", "JavaScript", "Python", "C++"],
-  },
-  {
-    label: "TOOLS",
-    skills: ["Git", "GitHub", "Vercel", "Cloudinary", "Docker (learning)"],
-  },
-];
-
-// ─── Chapter 5: Save File ──────────────────────────────────────────────
-
-export const saveFile: SaveFileData = {
-  resumePath: "/resume/raaj-patre-resume.pdf",
-  version: "v1.0.0",
-  lastUpdated: "MAY 2026",
-  progressPct: 60,
-  estGraduation: "2027",
-};
+    return {
+      origin: isObject(data.origin)
+        ? { ...emptyOrigin, ...(data.origin as Partial<OriginData>) }
+        : emptyOrigin,
+      guild: isObject(data.guild)
+        ? { ...emptyGuild, ...(data.guild as Partial<GuildEntry>) }
+        : emptyGuild,
+      factions: Array.isArray(data.factions) ? (data.factions as FactionEntry[]) : [],
+      stats: Array.isArray(data.stats) ? (data.stats as StatCategory[]) : [],
+      saveFile: isObject(data.save_file)
+        ? { ...emptySaveFile, ...(data.save_file as Partial<SaveFileData>) }
+        : emptySaveFile,
+    };
+  } catch (e) {
+    console.error("getAboutContent error:", e);
+    return emptyAbout;
+  }
+}

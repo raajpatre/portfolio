@@ -1,10 +1,19 @@
 import { AboutClient } from "@/components/public/AboutClient";
-import { origin, guild, factions, stats, saveFile } from "@/data/about";
+import { getAboutContent } from "@/data/about";
 
-export const metadata = {
-  title: "About | Raaj Patre",
-  description: `${origin.class} · LVL ${origin.level} — ${origin.bio.slice(0, 120)}…`,
-};
+export const revalidate = 60;
+
+export async function generateMetadata() {
+  const { origin } = await getAboutContent();
+  const desc =
+    origin.class && origin.bio
+      ? `${origin.class} · LVL ${origin.level} — ${origin.bio.slice(0, 120)}…`
+      : "About Raaj Patre";
+  return {
+    title: "About | Raaj Patre",
+    description: desc,
+  };
+}
 
 // ─── Guild crest (8x8 pixel shield) ───────────────────────────────────
 const CREST_GRID = [
@@ -101,7 +110,19 @@ function SmallFloppy() {
   );
 }
 
-export default function AboutPage() {
+function EmptyHint({ label }: { label: string }) {
+  return (
+    <div className="font-mono text-[12px] text-text-muted/70 italic px-3 py-2 border border-dashed border-border-pixel rounded-sm">
+      [ {label} — add content via admin ]
+    </div>
+  );
+}
+
+export default async function AboutPage() {
+  const { origin, guild, factions, stats, saveFile } = await getAboutContent();
+  const hasOrigin = origin.name.length > 0 || origin.bio.length > 0;
+  const hasGuild = guild.institution.length > 0;
+
   return (
     <>
       <div id="about-root" className="relative">
@@ -119,16 +140,22 @@ export default function AboutPage() {
             <div className="cs-cascade">
               <div className="cs-ch-label">CHAPTER 01</div>
               <h1 className="cs-ch1-title">ORIGIN</h1>
-              <div>
-                <span className="cs-class-badge">
-                  {origin.class} · LVL {origin.level}
-                </span>
-              </div>
-              <p className="cs-bio">{origin.bio}</p>
-              <div className="cs-location">
-                <span className="pin" />
-                {origin.location}
-              </div>
+              {hasOrigin ? (
+                <>
+                  <div>
+                    <span className="cs-class-badge">
+                      {origin.class} · LVL {origin.level}
+                    </span>
+                  </div>
+                  <p className="cs-bio">{origin.bio}</p>
+                  <div className="cs-location">
+                    <span className="pin" />
+                    {origin.location}
+                  </div>
+                </>
+              ) : (
+                <EmptyHint label="Origin chapter empty" />
+              )}
             </div>
           </div>
         </section>
@@ -139,34 +166,38 @@ export default function AboutPage() {
             CHAPTER 02 <span className="slash">/</span> GUILD
           </div>
           <div className="cs-chapter-inner cs-guild-inner">
-            <div className="cs-guild-card">
-              <Crest />
-              <div className="cs-guild-label">★ GUILD ★</div>
-              <div className="cs-guild-name">
-                {guild.institution.split(/\s+/).reduce<string[][]>(
-                  (acc, word) => {
-                    const last = acc[acc.length - 1];
-                    if (last.join(" ").length + word.length < 14) {
-                      last.push(word);
-                    } else {
-                      acc.push([word]);
-                    }
-                    return acc;
-                  },
-                  [[]]
-                ).map((line, i, all) => (
-                  <span key={i}>
-                    {line.join(" ").toUpperCase()}
-                    {i < all.length - 1 && <br />}
-                  </span>
-                ))}
+            {hasGuild ? (
+              <div className="cs-guild-card">
+                <Crest />
+                <div className="cs-guild-label">★ GUILD ★</div>
+                <div className="cs-guild-name">
+                  {guild.institution.split(/\s+/).reduce<string[][]>(
+                    (acc, word) => {
+                      const last = acc[acc.length - 1];
+                      if (last.join(" ").length + word.length < 14) {
+                        last.push(word);
+                      } else {
+                        acc.push([word]);
+                      }
+                      return acc;
+                    },
+                    [[]]
+                  ).map((line, i, all) => (
+                    <span key={i}>
+                      {line.join(" ").toUpperCase()}
+                      {i < all.length - 1 && <br />}
+                    </span>
+                  ))}
+                </div>
+                <div className="cs-guild-role">{guild.role}</div>
+                <div className="cs-guild-dur">{guild.duration}</div>
+                <div className="cs-guild-loc">{guild.location}</div>
+                <div className="cs-guild-divider" />
+                <div className="cs-guild-flavor">&ldquo;{guild.flavor}&rdquo;</div>
               </div>
-              <div className="cs-guild-role">{guild.role}</div>
-              <div className="cs-guild-dur">{guild.duration}</div>
-              <div className="cs-guild-loc">{guild.location}</div>
-              <div className="cs-guild-divider" />
-              <div className="cs-guild-flavor">&ldquo;{guild.flavor}&rdquo;</div>
-            </div>
+            ) : (
+              <EmptyHint label="Guild chapter empty" />
+            )}
           </div>
         </section>
 
@@ -176,19 +207,23 @@ export default function AboutPage() {
             CHAPTER 03 <span className="slash">/</span> FACTIONS
           </div>
           <div className="cs-chapter-inner">
-            <div className="cs-factions-row">
-              {factions.map((f) => (
-                <article key={f.org} className={`cs-faction ${f.cls}`}>
-                  <div className="accent" />
-                  <div className="cs-faction-body">
-                    <div className="cs-faction-name">{f.org}</div>
-                    <div className="cs-faction-role">{f.role}</div>
-                    <div className="cs-faction-dur">{f.duration}</div>
-                    <div className="cs-faction-desc">{f.blurb}</div>
-                  </div>
-                </article>
-              ))}
-            </div>
+            {factions.length > 0 ? (
+              <div className="cs-factions-row">
+                {factions.map((f) => (
+                  <article key={`${f.org}-${f.role}`} className={`cs-faction ${f.cls}`}>
+                    <div className="accent" />
+                    <div className="cs-faction-body">
+                      <div className="cs-faction-name">{f.org}</div>
+                      <div className="cs-faction-role">{f.role}</div>
+                      <div className="cs-faction-dur">{f.duration}</div>
+                      <div className="cs-faction-desc">{f.blurb}</div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <EmptyHint label="No factions yet" />
+            )}
           </div>
         </section>
 
@@ -202,31 +237,35 @@ export default function AboutPage() {
             style={{ ["--cs-lvl" as string]: `${saveFile.progressPct}%` }}
           >
             <div className="cs-cascade">
-              <div className="cs-stat-grid">
-                {stats.map((s) => (
-                  <div key={s.label} className="cs-stat-panel">
-                    <div className="cs-stat-cat">
-                      <PixelIcon name={s.label} />
-                      {s.label}
+              {stats.length > 0 ? (
+                <div className="cs-stat-grid">
+                  {stats.map((s) => (
+                    <div key={s.label} className="cs-stat-panel">
+                      <div className="cs-stat-cat">
+                        <PixelIcon name={s.label} />
+                        {s.label}
+                      </div>
+                      <div className="cs-stat-list">{s.skills.join(", ")}</div>
                     </div>
-                    <div className="cs-stat-list">{s.skills.join(", ")}</div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <EmptyHint label="No stats yet" />
+              )}
               <div className="cs-lvl-progress">
                 <div className="row">
                   <span>
-                    LVL {String(origin.level).padStart(2, "0")} ─ CHARACTER PROGRESS
+                    LVL {String(origin.level || 0).padStart(2, "0")} ─ CHARACTER PROGRESS
                   </span>
                   <span className="a">
-                    {saveFile.progressPct}% TO LVL {String(origin.level + 1).padStart(2, "0")}
+                    {saveFile.progressPct}% TO LVL {String((origin.level || 0) + 1).padStart(2, "0")}
                   </span>
                 </div>
                 <div className="cs-lvl-bar">
                   <div className="cs-lvl-fill" />
                 </div>
                 <div className="cs-lvl-cap">
-                  Est. graduation: {saveFile.estGraduation} · Current XP from coursework, hackathons & ships.
+                  Est. graduation: {saveFile.estGraduation || "—"} · Current XP from coursework, hackathons &amp; ships.
                 </div>
               </div>
             </div>
@@ -255,7 +294,7 @@ export default function AboutPage() {
                 </a>
               </div>
               <div className="cs-version">
-                {saveFile.version} · LAST UPDATED {saveFile.lastUpdated}
+                {saveFile.version} {saveFile.lastUpdated ? `· LAST UPDATED ${saveFile.lastUpdated}` : ""}
               </div>
             </div>
           </div>

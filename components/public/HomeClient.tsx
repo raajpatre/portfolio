@@ -6,6 +6,7 @@ import { Hero } from "./Hero";
 import { FeaturedProjects } from "./FeaturedProjects";
 import { HUD } from "./HUD";
 import { ProjectData } from "./ProjectCard";
+import type { FactionEntry, GuildEntry, OriginData, SaveFileData } from "@/data/about-types";
 
 interface HomeClientProps {
   featuredProjects: ProjectData[];
@@ -15,9 +16,15 @@ interface HomeClientProps {
     inProgress: number;
     languages: number;
   };
+  about: {
+    origin: OriginData;
+    guild: GuildEntry;
+    factions: FactionEntry[];
+    saveFile: SaveFileData;
+  };
 }
 
-export function HomeClient({ featuredProjects, stats }: HomeClientProps) {
+export function HomeClient({ featuredProjects, stats, about }: HomeClientProps) {
   const [welcomeComplete, setWelcomeComplete] = useState(false);
   const [bgVisible, setBgVisible] = useState(false);
 
@@ -117,7 +124,12 @@ export function HomeClient({ featuredProjects, stats }: HomeClientProps) {
       )}
 
       {/* Main content */}
-      <Hero />
+      <Hero
+        origin={about.origin}
+        guild={about.guild}
+        factions={about.factions}
+        saveFile={about.saveFile}
+      />
       <HUD {...stats} />
       <FeaturedProjects projects={featuredProjects} />
     </>

@@ -1,15 +1,16 @@
 import { createClient } from "@/lib/supabase/server";
 import { HomeClient } from "@/components/public/HomeClient";
+import { getAboutContent } from "@/data/about";
 
 export const revalidate = 60;
 
 export default async function Home() {
   const supabase = createClient();
 
-  const { data: allProjects } = await supabase
-    .from("projects")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const [{ data: allProjects }, about] = await Promise.all([
+    supabase.from("projects").select("*").order("created_at", { ascending: false }),
+    getAboutContent(),
+  ]);
 
   const projects = allProjects || [];
 
@@ -24,6 +25,12 @@ export default async function Home() {
     <HomeClient
       featuredProjects={featuredProjects}
       stats={{ questsCompleted, shipped, inProgress, languages }}
+      about={{
+        origin: about.origin,
+        guild: about.guild,
+        factions: about.factions,
+        saveFile: about.saveFile,
+      }}
     />
   );
 }

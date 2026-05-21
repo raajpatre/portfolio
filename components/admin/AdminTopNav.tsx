@@ -11,6 +11,7 @@ const TABS = [
   { href: "/admin/projects", label: "Projects" },
   { href: "/admin/certificates", label: "Certificates" },
   { href: "/admin/feed", label: "Feed" },
+  { href: "/admin/about", label: "About" },
 ];
 
 export function AdminTopNav({ email }: { email: string }) {

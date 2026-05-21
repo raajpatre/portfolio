@@ -4,7 +4,14 @@ import { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { origin, guild, factions, saveFile } from "@/data/about";
+import type { FactionEntry, GuildEntry, OriginData, SaveFileData } from "@/data/about-types";
+
+type HeroProps = {
+  origin: OriginData;
+  guild: GuildEntry;
+  factions: FactionEntry[];
+  saveFile: SaveFileData;
+};
 
 const SOCIALS = [
   {
@@ -36,7 +43,7 @@ const SOCIALS = [
   },
 ];
 
-function StatCard() {
+function StatCard({ origin, guild, factions }: { origin: OriginData; guild: GuildEntry; factions: FactionEntry[] }) {
   const factionNames = factions
     .slice(0, 2)
     .map((f) => f.org.replace("GirlScript Summer of Code", "GSSoC").replace("Google GenAI Academy APEC", "GenAI Academy"))
@@ -123,7 +130,7 @@ function StatCard() {
   );
 }
 
-export function Hero() {
+export function Hero({ origin, guild, factions, saveFile }: HeroProps) {
   const [pfpError, setPfpError] = useState(false);
 
   return (
@@ -212,7 +219,7 @@ export function Hero() {
       </motion.div>
 
       {/* Right column — stat card */}
-      <StatCard />
+      <StatCard origin={origin} guild={guild} factions={factions} />
     </section>
   );
 }
