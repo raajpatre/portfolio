@@ -220,12 +220,34 @@ export function AchievementCard({ cert, index = 0 }: AchievementCardProps) {
               className="absolute w-[110px] h-[110px] rounded-full opacity-60 border-2 border-border-pixel shadow-[0_0_0_1px_#2a2d4a]"
               aria-hidden="true"
             />
-            {/* Trophy */}
-            {isLocked ? <Padlock /> : <IconComp />}
+            {/* Trophy or uploaded image */}
+            {isLocked ? (
+              <Padlock />
+            ) : cert.image_url ? (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={cert.image_url}
+                  alt={cert.title}
+                  className="absolute inset-0 w-full h-full object-cover z-[1]"
+                  loading="lazy"
+                />
+                {/* Slight inner shadow / vignette so the ribbon stays readable */}
+                <span
+                  className="absolute inset-0 z-[2] pointer-events-none"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, rgba(10,12,26,0.35) 0%, rgba(10,12,26,0) 35%, rgba(10,12,26,0) 65%, rgba(10,12,26,0.5) 100%)",
+                  }}
+                />
+              </>
+            ) : (
+              <IconComp />
+            )}
 
             {/* Diagonal ribbon top-right */}
             <span
-              className="absolute top-2 -right-9 w-[120px] py-1 text-center font-pixel text-[6px] tracking-[0.16em] overflow-hidden"
+              className="absolute top-2 -right-9 z-[3] w-[120px] py-1 text-center font-pixel text-[6px] tracking-[0.16em] overflow-hidden"
               style={{
                 background: isLocked ? "rgba(107,112,148,0.12)" : "rgba(61,214,172,0.18)",
                 color: isLocked ? "#6b7094" : "#3dd6ac",
