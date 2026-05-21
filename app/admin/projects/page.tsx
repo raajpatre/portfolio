@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import ProjectsClient from "./ProjectsClient";
+import ProjectsClient from "@/components/admin/ProjectsClient";
 
 export default async function ProjectsPage() {
   const supabase = createClient();

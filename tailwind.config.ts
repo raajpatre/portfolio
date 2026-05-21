@@ -11,7 +11,10 @@ const config: Config = {
     extend: {
       colors: {
         'bg-base': '#0a0c1a',
+        'bg-surface': '#12152b',
+        'bg-elevated': '#1a1e38',
         'text-primary': '#e8e8f0',
+        'text-muted': '#6b7094',
         'accent-gold': '#f5c542',
         'accent-violet': '#7c6df5',
         'accent-teal': '#3dd6ac',

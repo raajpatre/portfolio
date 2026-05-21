@@ -130,3 +130,602 @@
     opacity: 1;
   }
 }
+
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@keyframes drift {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-40px, 80px, 0); }
+}
+
+@keyframes idleBounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-2px); }
+}
+
+@keyframes goldShimmer {
+  0%, 100% { border-color: #f5c542; box-shadow: 0 0 0 1px #f5c542; }
+  50%      { border-color: #ffd970; box-shadow: 0 0 12px rgba(255,217,112,0.45), 0 0 0 1px #ffd970; }
+}
+
+@keyframes ribbonShimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes nodePulse {
+  0%   { transform: rotate(45deg) scale(1); }
+  50%  { transform: rotate(45deg) scale(1.4); filter: drop-shadow(0 0 8px currentColor); }
+  100% { transform: rotate(45deg) scale(1); }
+}
+
+@keyframes mfadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c1a; }
+::-webkit-scrollbar-thumb { background: #2a2d4a; border: 2px solid #0a0c1a; }
+::-webkit-scrollbar-thumb:hover { background: #7c6df5; }
+
+/* Text selection */
+::selection { background: #7c6df5; color: #0a0c1a; }
+
+/* ─── Character Sheet (About page) ─────────────────────────────────── */
+
+/* Chapter container */
+.cs-chapter {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 120px clamp(20px, 6vw, 80px) 80px;
+  overflow: hidden;
+}
+.cs-chapter + .cs-chapter { border-top: 1px solid #2a2d4a; }
+.cs-chapter-header {
+  position: absolute;
+  top: 96px;
+  left: clamp(20px, 6vw, 80px);
+  font-family: "Press Start 2P", monospace;
+  font-size: 8px;
+  color: #6b7094;
+  letter-spacing: 0.12em;
+  z-index: 2;
+}
+.cs-chapter-header .slash { color: #2a2d4a; margin: 0 6px; }
+.cs-chapter-inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1100px;
+}
+
+/* Cascade on enter — opacity + translateY */
+.cs-cascade > * {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 600ms ease-out, transform 600ms ease-out;
+}
+.cs-chapter.in .cs-cascade > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+.cs-chapter.in .cs-cascade > *:nth-child(1) { transition-delay: 80ms; }
+.cs-chapter.in .cs-cascade > *:nth-child(2) { transition-delay: 160ms; }
+.cs-chapter.in .cs-cascade > *:nth-child(3) { transition-delay: 240ms; }
+.cs-chapter.in .cs-cascade > *:nth-child(4) { transition-delay: 320ms; }
+.cs-chapter.in .cs-cascade > *:nth-child(5) { transition-delay: 400ms; }
+.cs-chapter.in .cs-cascade > *:nth-child(6) { transition-delay: 480ms; }
+
+/* Chapter tracker — fixed left rail */
+.cs-tracker {
+  position: fixed;
+  top: 50%;
+  left: 28px;
+  transform: translateY(-50%);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  pointer-events: none;
+}
+.cs-tracker .line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: #2a2d4a;
+  transform: translateX(-0.5px);
+  z-index: -1;
+}
+.cs-tracker button {
+  pointer-events: auto;
+  background: #0a0c1a;
+  border: 0;
+  padding: 4px 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-family: "Press Start 2P", monospace;
+  font-size: 7px;
+  color: #6b7094;
+  letter-spacing: 0.08em;
+  transition: color 200ms ease;
+}
+.cs-tracker button .dot {
+  width: 10px;
+  height: 10px;
+  background: transparent;
+  box-shadow: 0 0 0 1px #2a2d4a;
+  transition: background 200ms ease, box-shadow 200ms ease;
+}
+.cs-tracker button.active { color: #f5c542; }
+.cs-tracker button.active .dot {
+  background: #f5c542;
+  box-shadow: 0 0 10px #f5c542, 0 0 0 1px #f5c542;
+}
+.cs-tracker button:hover { color: #e8e8f0; }
+
+/* Mobile tracker pips */
+.cs-mobile-tracker {
+  display: none;
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  z-index: 25;
+  padding: 10px 16px;
+  gap: 6px;
+  justify-content: center;
+  background: rgba(10, 12, 26, 0.85);
+  border-bottom: 1px solid #2a2d4a;
+  backdrop-filter: blur(6px);
+}
+.cs-mobile-tracker .pip {
+  width: 8px;
+  height: 8px;
+  box-shadow: 0 0 0 1px #2a2d4a;
+}
+.cs-mobile-tracker .pip.active {
+  background: #f5c542;
+  box-shadow: 0 0 8px #f5c542, 0 0 0 1px #f5c542;
+}
+@media (max-width: 767px) {
+  .cs-tracker { display: none; }
+  .cs-mobile-tracker { display: flex; }
+}
+
+/* Chapter 1 — Origin */
+.cs-origin { text-align: center; }
+.cs-origin .cs-chapter-inner { display: flex; flex-direction: column; align-items: center; }
+.cs-ch-label {
+  font-family: "Press Start 2P", monospace;
+  font-size: 8px;
+  color: #7c6df5;
+  letter-spacing: 0.32em;
+  margin-bottom: 18px;
+}
+.cs-ch1-title {
+  font-family: "Press Start 2P", monospace;
+  font-size: clamp(28px, 6vw, 36px);
+  color: #e8e8f0;
+  margin: 0 0 22px;
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 24px rgba(124, 109, 245, 0.4);
+}
+.cs-class-badge {
+  display: inline-block;
+  font-family: "Press Start 2P", monospace;
+  font-size: 9px;
+  color: #7c6df5;
+  border: 2px solid #7c6df5;
+  box-shadow: 0 0 12px rgba(124, 109, 245, 0.35), 0 0 0 1px #7c6df5;
+  padding: 10px 14px;
+  border-radius: 2px;
+  margin-bottom: 24px;
+  letter-spacing: 0.08em;
+}
+.cs-bio {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 15px;
+  color: #e8e8f0;
+  max-width: 560px;
+  line-height: 1.75;
+  margin: 0 0 20px;
+}
+.cs-location {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  color: #6b7094;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 0.06em;
+}
+.cs-location .pin {
+  width: 8px;
+  height: 8px;
+  background: #3dd6ac;
+  box-shadow: 0 0 8px #3dd6ac;
+}
+
+/* Mountains parallax */
+.cs-mountains { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.cs-mlayer {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: 0;
+  will-change: transform;
+}
+.cs-mlayer.far {
+  height: 38%;
+  background: #1a1e38;
+  clip-path: polygon(0 100%, 0 65%, 6% 50%, 12% 60%, 20% 35%, 28% 55%, 36% 45%, 44% 60%, 52% 30%, 60% 50%, 68% 40%, 76% 58%, 84% 45%, 92% 60%, 100% 50%, 100% 100%);
+}
+.cs-mlayer.mid {
+  height: 30%;
+  background: #12152b;
+  clip-path: polygon(0 100%, 0 80%, 8% 55%, 16% 70%, 24% 40%, 32% 65%, 40% 50%, 48% 70%, 56% 35%, 64% 55%, 72% 45%, 80% 65%, 88% 50%, 96% 60%, 100% 55%, 100% 100%);
+}
+.cs-mlayer.near {
+  height: 22%;
+  background: #0a0c1a;
+  clip-path: polygon(0 100%, 0 60%, 10% 75%, 22% 50%, 34% 70%, 46% 55%, 58% 75%, 70% 50%, 82% 70%, 94% 55%, 100% 65%, 100% 100%);
+}
+
+/* Moon */
+.cs-moon {
+  position: absolute;
+  top: 18%;
+  right: 12%;
+  width: 56px;
+  height: 56px;
+  background: #12152b;
+  border: 2px solid #f5c542;
+  box-shadow: 0 0 24px rgba(245, 197, 66, 0.4), 0 0 0 1px #f5c542;
+  z-index: 0;
+}
+.cs-moon::before,
+.cs-moon::after {
+  content: "";
+  position: absolute;
+  background: #1a1e38;
+}
+.cs-moon::before { top: 10px; left: 8px; width: 8px; height: 8px; }
+.cs-moon::after { top: 28px; left: 26px; width: 10px; height: 6px; }
+
+/* Stars layer (Chapter 1 only) */
+.cs-stars-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 18%, rgba(232, 232, 240, 0.7), transparent 60%),
+    radial-gradient(1.5px 1.5px at 30% 12%, rgba(232, 232, 240, 0.5), transparent 60%),
+    radial-gradient(1px 1px at 55% 22%, rgba(232, 232, 240, 0.6), transparent 60%),
+    radial-gradient(1px 1px at 72% 16%, rgba(124, 109, 245, 0.6), transparent 60%),
+    radial-gradient(2px 2px at 88% 26%, rgba(245, 197, 66, 0.5), transparent 60%),
+    radial-gradient(1px 1px at 18% 32%, rgba(232, 232, 240, 0.5), transparent 60%);
+  z-index: 0;
+}
+
+/* Chapter 2 — Guild */
+.cs-guild-inner { display: flex; justify-content: center; }
+.cs-guild-card {
+  width: 100%;
+  max-width: 480px;
+  background: #12152b;
+  border: 2px solid #f5c542;
+  box-shadow: 0 0 20px rgba(245, 197, 66, 0.25), 0 0 0 1px #f5c542;
+  padding: 28px 28px 22px;
+  text-align: center;
+  border-radius: 2px;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 350ms ease-out, transform 350ms ease-out;
+}
+.cs-chapter.in .cs-guild-card { opacity: 1; transform: scale(1); }
+.cs-crest {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  background: #1a1e38;
+  border: 2px solid #2a2d4a;
+  box-shadow: 0 0 0 1px #2a2d4a;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  image-rendering: pixelated;
+}
+.cs-crest .px { background: transparent; }
+.cs-crest .gold { background: #f5c542; }
+.cs-crest .violet { background: #7c6df5; }
+.cs-crest .dark { background: #0a0c1a; }
+.cs-guild-label {
+  font-family: "Press Start 2P", monospace;
+  font-size: 7px;
+  color: #f5c542;
+  letter-spacing: 0.2em;
+  margin-bottom: 10px;
+}
+.cs-guild-name {
+  font-family: "Press Start 2P", monospace;
+  font-size: 12px;
+  color: #e8e8f0;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  margin-bottom: 12px;
+}
+.cs-guild-role {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  color: #6b7094;
+  margin-bottom: 8px;
+}
+.cs-guild-dur {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  color: #3dd6ac;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+.cs-guild-loc {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: #6b7094;
+  letter-spacing: 0.06em;
+}
+.cs-guild-divider {
+  height: 1px;
+  background: #2a2d4a;
+  margin: 18px 0;
+}
+.cs-guild-flavor {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  color: #6b7094;
+  font-style: italic;
+  line-height: 1.7;
+}
+
+/* Chapter 3 — Factions */
+.cs-factions-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+@media (max-width: 980px) {
+  .cs-factions-row { grid-template-columns: 1fr 1fr; }
+  .cs-factions-row > :nth-child(3) {
+    grid-column: 1 / -1;
+    max-width: 360px;
+    justify-self: center;
+    width: 100%;
+  }
+}
+@media (max-width: 640px) {
+  .cs-factions-row { grid-template-columns: 1fr; }
+}
+.cs-faction {
+  background: #12152b;
+  border: 2px solid #2a2d4a;
+  box-shadow: 0 0 0 1px #2a2d4a;
+  padding: 0;
+  border-radius: 2px;
+  overflow: hidden;
+  transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+  opacity: 0;
+  transform: translateX(-30px);
+}
+.cs-chapter.in .cs-faction {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 400ms ease-out, transform 400ms ease-out,
+    border-color 200ms ease, box-shadow 200ms ease;
+}
+.cs-chapter.in .cs-faction:nth-child(1) { transition-delay: 100ms, 100ms, 0ms, 0ms; }
+.cs-chapter.in .cs-faction:nth-child(2) { transition-delay: 200ms, 200ms, 0ms, 0ms; }
+.cs-chapter.in .cs-faction:nth-child(3) { transition-delay: 300ms, 300ms, 0ms, 0ms; }
+.cs-faction:hover {
+  transform: translateY(-4px);
+  border-color: #7c6df5;
+  box-shadow: 0 0 14px rgba(124, 109, 245, 0.25), 0 0 0 1px #7c6df5;
+}
+.cs-faction .accent { height: 4px; }
+.cs-faction.gold .accent { background: #f5c542; }
+.cs-faction.teal .accent { background: #3dd6ac; }
+.cs-faction.violet .accent { background: #7c6df5; }
+.cs-faction-body { padding: 18px 18px 20px; }
+.cs-faction-name {
+  font-family: "Press Start 2P", monospace;
+  font-size: 9px;
+  color: #e8e8f0;
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+.cs-faction-role {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  color: #6b7094;
+  margin-bottom: 6px;
+}
+.cs-faction-dur {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+}
+.cs-faction.gold .cs-faction-dur { color: #f5c542; }
+.cs-faction.teal .cs-faction-dur { color: #3dd6ac; }
+.cs-faction.violet .cs-faction-dur { color: #7c6df5; }
+.cs-faction-desc {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  color: #6b7094;
+  line-height: 1.6;
+}
+
+/* Chapter 4 — Stats */
+.cs-stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+@media (max-width: 720px) {
+  .cs-stat-grid { grid-template-columns: 1fr; }
+}
+.cs-stat-panel {
+  background: #12152b;
+  border: 2px solid #2a2d4a;
+  box-shadow: 0 0 0 1px #2a2d4a;
+  padding: 18px 20px;
+  border-radius: 2px;
+  transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+}
+.cs-stat-panel:hover {
+  border-color: #3dd6ac;
+  box-shadow: 0 0 14px rgba(61, 214, 172, 0.25), 0 0 0 1px #3dd6ac;
+  transform: translateY(-2px);
+}
+.cs-stat-cat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: "Press Start 2P", monospace;
+  font-size: 8px;
+  color: #3dd6ac;
+  letter-spacing: 0.12em;
+  margin-bottom: 12px;
+}
+.cs-stat-icon { width: 14px; height: 14px; display: inline-block; }
+.cs-stat-list {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  color: #e8e8f0;
+  line-height: 2;
+  word-spacing: 0.05em;
+}
+
+/* Level progress */
+.cs-lvl-progress {
+  margin-top: 28px;
+  padding: 16px;
+  border: 1px solid #2a2d4a;
+  box-shadow: 0 0 0 1px #2a2d4a;
+  background: rgba(18, 21, 43, 0.5);
+  border-radius: 2px;
+}
+.cs-lvl-progress .row {
+  display: flex;
+  justify-content: space-between;
+  font-family: "Press Start 2P", monospace;
+  font-size: 7px;
+  color: #6b7094;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+.cs-lvl-progress .row .a { color: #f5c542; }
+.cs-lvl-bar {
+  height: 8px;
+  background: #1a1e38;
+  border: 1px solid #2a2d4a;
+  box-shadow: 0 0 0 1px #2a2d4a;
+  position: relative;
+  overflow: hidden;
+}
+.cs-lvl-fill {
+  height: 100%;
+  width: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    #7c6df5 0 6px,
+    #6857e3 6px 8px
+  );
+  box-shadow: 0 0 10px rgba(124, 109, 245, 0.55);
+  transition: width 1200ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.cs-chapter.in .cs-lvl-fill { width: var(--cs-lvl, 60%); }
+.cs-lvl-cap {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: #6b7094;
+  margin-top: 10px;
+  letter-spacing: 0.04em;
+}
+
+/* Chapter 5 — Save File */
+.cs-save { text-align: center; }
+.cs-save .cs-chapter-inner { display: flex; flex-direction: column; align-items: center; }
+.cs-floppy-wrap {
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 22px;
+  animation: floppyFloat 2s ease-in-out infinite;
+}
+@keyframes floppyFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.cs-save-title {
+  font-family: "Press Start 2P", monospace;
+  font-size: 16px;
+  color: #e8e8f0;
+  margin: 0 0 10px;
+  letter-spacing: 0.06em;
+}
+.cs-save-sub {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  color: #6b7094;
+  margin-bottom: 22px;
+}
+.cs-save-btn {
+  font-family: "Press Start 2P", monospace;
+  font-size: 10px;
+  color: #0a0c1a;
+  background: #f5c542;
+  border: 2px solid #f5c542;
+  box-shadow: 0 0 0 1px #f5c542;
+  padding: 14px 18px;
+  cursor: pointer;
+  border-radius: 2px;
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+  transition: transform 150ms ease, box-shadow 150ms ease, filter 150ms ease, background 100ms;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.cs-save-btn:hover {
+  transform: scale(1.04);
+  box-shadow: 0 0 18px #f5c542, 0 0 0 1px #f5c542;
+}
+.cs-save-btn .disk { width: 14px; height: 14px; display: inline-block; }
+.cs-version {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  color: #6b7094;
+  letter-spacing: 0.1em;
+}

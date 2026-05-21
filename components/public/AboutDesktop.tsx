@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { MapPin, GraduationCap, Users, BarChart3, Save, Download } from "lucide-react";
 import { origin, guild, factions, stats, saveFile } from "@/data/about";
-import { PixelButton } from "@/components/public/PixelButton";
+import { PixelButton } from "@/components/ui/PixelButton";
 
 // ─── Chapter Shell ──────────────────────────────────────────────────────
 

@@ -1,0 +1,979 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Character Sheet — Raaj Patre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Press+Start+2P&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg-base:        #0a0c1a;
+    --bg-surface:     #12152b;
+    --bg-elevated:    #1a1e38;
+    --text-primary:   #e8e8f0;
+    --text-muted:     #6b7094;
+    --accent-gold:    #f5c542;
+    --accent-gold-2:  #ffd970;
+    --accent-violet:  #7c6df5;
+    --accent-teal:    #3dd6ac;
+    --accent-red:     #f55c5c;
+    --border-pixel:   #2a2d4a;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    image-rendering: pixelated;
+    overflow-x: hidden;
+  }
+
+  /* ---------- NAV ---------- */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 40;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px clamp(20px, 5vw, 64px);
+    border-bottom: 1px solid var(--border-pixel);
+    background: rgba(10,12,26,0.78);
+    backdrop-filter: blur(6px);
+  }
+  .nav .brand {
+    font-family: "Press Start 2P", monospace;
+    font-size: 11px; color: var(--text-primary);
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none;
+  }
+  .nav .brand .chip {
+    background: var(--accent-violet);
+    color: var(--bg-base);
+    padding: 4px 6px; font-size: 8px;
+    box-shadow: 0 0 0 1px var(--accent-violet);
+  }
+  .nav .links { display: flex; gap: 22px; }
+  .nav .links a {
+    font-family: "Press Start 2P", monospace;
+    font-size: 9px; color: var(--text-muted);
+    text-decoration: none; letter-spacing: 0.05em;
+  }
+  .nav .links a:hover { color: var(--text-primary); }
+  .nav .links a.active { color: var(--accent-gold); }
+  .nav .save {
+    font-family: "Press Start 2P", monospace;
+    font-size: 8px; color: var(--accent-teal);
+    border: 1px solid var(--border-pixel);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    padding: 6px 8px;
+  }
+
+  /* ---------- CHAPTER TRACKER ---------- */
+  .tracker {
+    position: fixed;
+    top: 50%;
+    left: 28px;
+    transform: translateY(-50%);
+    z-index: 30;
+    display: flex; flex-direction: column; align-items: center; gap: 28px;
+    pointer-events: none;
+  }
+  .tracker .line {
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 50%;
+    width: 1px;
+    background: var(--border-pixel);
+    transform: translateX(-0.5px);
+    z-index: -1;
+  }
+  .tracker button {
+    pointer-events: auto;
+    background: var(--bg-base);
+    border: 0;
+    padding: 4px 0;
+    cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    font-family: "Press Start 2P", monospace;
+    font-size: 7px;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    transition: color 200ms ease;
+  }
+  .tracker button .dot {
+    width: 10px; height: 10px;
+    background: transparent;
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    transition: background 200ms ease, box-shadow 200ms ease;
+  }
+  .tracker button.active { color: var(--accent-gold); }
+  .tracker button.active .dot {
+    background: var(--accent-gold);
+    box-shadow: 0 0 10px var(--accent-gold), 0 0 0 1px var(--accent-gold);
+  }
+  .tracker button:hover { color: var(--text-primary); }
+
+  /* mobile progress dots */
+  .mobile-tracker {
+    display: none;
+    position: fixed;
+    top: 70px; left: 0; right: 0;
+    z-index: 25;
+    padding: 10px 16px;
+    gap: 6px;
+    justify-content: center;
+    background: rgba(10,12,26,0.85);
+    border-bottom: 1px solid var(--border-pixel);
+    backdrop-filter: blur(6px);
+  }
+  .mobile-tracker .pip {
+    width: 8px; height: 8px;
+    box-shadow: 0 0 0 1px var(--border-pixel);
+  }
+  .mobile-tracker .pip.active {
+    background: var(--accent-gold);
+    box-shadow: 0 0 8px var(--accent-gold), 0 0 0 1px var(--accent-gold);
+  }
+  @media (max-width: 767px) {
+    .tracker { display: none; }
+    .mobile-tracker { display: flex; }
+  }
+
+  /* ---------- CHAPTER ---------- */
+  .chapter {
+    position: relative;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 120px clamp(20px, 6vw, 80px) 80px;
+    overflow: hidden;
+  }
+  .chapter + .chapter { border-top: 1px solid var(--border-pixel); }
+  .chapter-header {
+    position: absolute;
+    top: 96px;
+    left: clamp(20px, 6vw, 80px);
+    font-family: "Press Start 2P", monospace;
+    font-size: 8px;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+  }
+  .chapter-header .slash { color: var(--border-pixel); margin: 0 6px; }
+  .chapter-inner {
+    position: relative; z-index: 2;
+    width: 100%;
+    max-width: 1100px;
+  }
+
+  /* cascade on enter */
+  .cascade > * {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 600ms ease-out, transform 600ms ease-out;
+  }
+  .chapter.in .cascade > * {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .chapter.in .cascade > *:nth-child(1) { transition-delay: 80ms; }
+  .chapter.in .cascade > *:nth-child(2) { transition-delay: 160ms; }
+  .chapter.in .cascade > *:nth-child(3) { transition-delay: 240ms; }
+  .chapter.in .cascade > *:nth-child(4) { transition-delay: 320ms; }
+  .chapter.in .cascade > *:nth-child(5) { transition-delay: 400ms; }
+  .chapter.in .cascade > *:nth-child(6) { transition-delay: 480ms; }
+
+  /* ---------- CHAPTER 1 — ORIGIN ---------- */
+  #ch1 { text-align: center; }
+  #ch1 .chapter-inner { display: flex; flex-direction: column; align-items: center; }
+  .ch-label {
+    font-family: "Press Start 2P", monospace;
+    font-size: 8px;
+    color: var(--accent-violet);
+    letter-spacing: 0.32em;
+    margin-bottom: 18px;
+  }
+  .ch1-title {
+    font-family: "Press Start 2P", monospace;
+    font-size: clamp(28px, 6vw, 36px);
+    color: var(--text-primary);
+    margin: 0 0 22px;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 24px rgba(124,109,245,0.4);
+  }
+  .class-badge {
+    display: inline-block;
+    font-family: "Press Start 2P", monospace;
+    font-size: 9px;
+    color: var(--accent-violet);
+    border: 2px solid var(--accent-violet);
+    box-shadow: 0 0 12px rgba(124,109,245,0.35), 0 0 0 1px var(--accent-violet);
+    padding: 10px 14px;
+    border-radius: 2px;
+    margin-bottom: 24px;
+    letter-spacing: 0.08em;
+  }
+  .bio {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 15px;
+    color: var(--text-primary);
+    max-width: 560px;
+    line-height: 1.75;
+    margin: 0 0 20px;
+  }
+  .location {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    display: inline-flex; align-items: center; gap: 8px;
+    letter-spacing: 0.06em;
+  }
+  .location .pin {
+    width: 8px; height: 8px;
+    background: var(--accent-teal);
+    box-shadow: 0 0 8px var(--accent-teal);
+  }
+
+  /* Mountain layers */
+  .mountains { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+  .mlayer {
+    position: absolute;
+    left: -10%; right: -10%;
+    bottom: 0;
+    will-change: transform;
+  }
+  .mlayer.far  { height: 38%; background: #1a1e38; clip-path: polygon(0 100%, 0 65%, 6% 50%, 12% 60%, 20% 35%, 28% 55%, 36% 45%, 44% 60%, 52% 30%, 60% 50%, 68% 40%, 76% 58%, 84% 45%, 92% 60%, 100% 50%, 100% 100%); }
+  .mlayer.mid  { height: 30%; background: #12152b; clip-path: polygon(0 100%, 0 80%, 8% 55%, 16% 70%, 24% 40%, 32% 65%, 40% 50%, 48% 70%, 56% 35%, 64% 55%, 72% 45%, 80% 65%, 88% 50%, 96% 60%, 100% 55%, 100% 100%); }
+  .mlayer.near { height: 22%; background: #0a0c1a; clip-path: polygon(0 100%, 0 60%, 10% 75%, 22% 50%, 34% 70%, 46% 55%, 58% 75%, 70% 50%, 82% 70%, 94% 55%, 100% 65%, 100% 100%); }
+  .mlayer .twinkle {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: rgba(245,197,66,0.6);
+    box-shadow: 0 0 6px rgba(245,197,66,0.8);
+  }
+
+  /* moon */
+  .moon {
+    position: absolute;
+    top: 18%; right: 12%;
+    width: 56px; height: 56px;
+    background: var(--bg-surface);
+    border: 2px solid var(--accent-gold);
+    box-shadow: 0 0 24px rgba(245,197,66,0.4), 0 0 0 1px var(--accent-gold);
+    z-index: 0;
+  }
+  .moon::before, .moon::after {
+    content: ""; position: absolute;
+    background: var(--bg-elevated);
+  }
+  .moon::before { top: 10px; left: 8px; width: 8px; height: 8px; }
+  .moon::after  { top: 28px; left: 26px; width: 10px; height: 6px; }
+
+  /* stars in ch1 only */
+  #ch1 .stars-bg {
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 18%, rgba(232,232,240,0.7), transparent 60%),
+      radial-gradient(1.5px 1.5px at 30% 12%, rgba(232,232,240,0.5), transparent 60%),
+      radial-gradient(1px 1px at 55% 22%, rgba(232,232,240,0.6), transparent 60%),
+      radial-gradient(1px 1px at 72% 16%, rgba(124,109,245,0.6), transparent 60%),
+      radial-gradient(2px 2px at 88% 26%, rgba(245,197,66,0.5), transparent 60%),
+      radial-gradient(1px 1px at 18% 32%, rgba(232,232,240,0.5), transparent 60%);
+    z-index: 0;
+  }
+
+  /* ---------- CHAPTER 2 — GUILD ---------- */
+  #ch2 .chapter-inner { display: flex; justify-content: center; }
+  .guild-card {
+    width: 100%;
+    max-width: 480px;
+    background: var(--bg-surface);
+    border: 2px solid var(--accent-gold);
+    box-shadow: 0 0 20px rgba(245,197,66,0.25), 0 0 0 1px var(--accent-gold);
+    padding: 28px 28px 22px;
+    text-align: center;
+    border-radius: 2px;
+    opacity: 0;
+    transform: scale(0.85);
+    transition: opacity 350ms ease-out, transform 350ms ease-out;
+  }
+  .chapter.in .guild-card { opacity: 1; transform: scale(1); }
+  .crest {
+    width: 64px; height: 64px;
+    margin: 0 auto 16px;
+    background: var(--bg-elevated);
+    border: 2px solid var(--border-pixel);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    image-rendering: pixelated;
+  }
+  /* Pixel shield crest */
+  .crest .px { background: transparent; }
+  .crest .gold { background: var(--accent-gold); }
+  .crest .violet { background: var(--accent-violet); }
+  .crest .dark { background: var(--bg-base); }
+
+  .guild-label {
+    font-family: "Press Start 2P", monospace;
+    font-size: 7px;
+    color: var(--accent-gold);
+    letter-spacing: 0.2em;
+    margin-bottom: 10px;
+  }
+  .guild-name {
+    font-family: "Press Start 2P", monospace;
+    font-size: 12px;
+    color: var(--text-primary);
+    line-height: 1.5;
+    letter-spacing: 0.04em;
+    margin-bottom: 12px;
+  }
+  .guild-role {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .guild-dur {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--accent-teal);
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+  .guild-loc {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+  }
+  .guild-divider {
+    height: 1px; background: var(--border-pixel);
+    margin: 18px 0;
+  }
+  .guild-flavor {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+    line-height: 1.7;
+  }
+
+  /* ---------- CHAPTER 3 — FACTIONS ---------- */
+  .factions-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  @media (max-width: 980px) {
+    .factions-row { grid-template-columns: 1fr 1fr; }
+    .factions-row > :nth-child(3) { grid-column: 1 / -1; max-width: 360px; justify-self: center; width: 100%; }
+  }
+  @media (max-width: 640px) { .factions-row { grid-template-columns: 1fr; } }
+
+  .faction {
+    background: var(--bg-surface);
+    border: 2px solid var(--border-pixel);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    padding: 0;
+    border-radius: 2px;
+    overflow: hidden;
+    transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  .chapter.in .faction { opacity: 1; transform: translateX(0); transition: opacity 400ms ease-out, transform 400ms ease-out, border-color 200ms ease, box-shadow 200ms ease; }
+  .chapter.in .faction:nth-child(1) { transition-delay: 100ms, 100ms, 0ms, 0ms; }
+  .chapter.in .faction:nth-child(2) { transition-delay: 200ms, 200ms, 0ms, 0ms; }
+  .chapter.in .faction:nth-child(3) { transition-delay: 300ms, 300ms, 0ms, 0ms; }
+  .faction:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent-violet);
+    box-shadow: 0 0 14px rgba(124,109,245,0.25), 0 0 0 1px var(--accent-violet);
+  }
+  .faction .accent { height: 4px; }
+  .faction.gold   .accent { background: var(--accent-gold); }
+  .faction.teal   .accent { background: var(--accent-teal); }
+  .faction.violet .accent { background: var(--accent-violet); }
+  .faction-body { padding: 18px 18px 20px; }
+  .faction-name {
+    font-family: "Press Start 2P", monospace;
+    font-size: 9px;
+    color: var(--text-primary);
+    line-height: 1.5;
+    letter-spacing: 0.06em;
+    margin-bottom: 12px;
+  }
+  .faction-role {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .faction-dur {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    margin-bottom: 12px;
+  }
+  .faction.gold   .faction-dur { color: var(--accent-gold); }
+  .faction.teal   .faction-dur { color: var(--accent-teal); }
+  .faction.violet .faction-dur { color: var(--accent-violet); }
+  .faction-desc {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* ---------- CHAPTER 4 — STATS ---------- */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  @media (max-width: 720px) { .stat-grid { grid-template-columns: 1fr; } }
+  .stat-panel {
+    background: var(--bg-surface);
+    border: 2px solid var(--border-pixel);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    padding: 18px 20px;
+    border-radius: 2px;
+    transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+  }
+  .stat-panel:hover {
+    border-color: var(--accent-teal);
+    box-shadow: 0 0 14px rgba(61,214,172,0.25), 0 0 0 1px var(--accent-teal);
+    transform: translateY(-2px);
+  }
+  .stat-cat {
+    display: flex; align-items: center; gap: 10px;
+    font-family: "Press Start 2P", monospace;
+    font-size: 8px;
+    color: var(--accent-teal);
+    letter-spacing: 0.12em;
+    margin-bottom: 12px;
+  }
+  .stat-icon {
+    width: 14px; height: 14px;
+    display: inline-block;
+  }
+  .stat-list {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    color: var(--text-primary);
+    line-height: 2;
+    word-spacing: 0.05em;
+  }
+
+  .lvl-progress {
+    margin-top: 28px;
+    padding: 16px;
+    border: 1px solid var(--border-pixel);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    background: rgba(18,21,43,0.5);
+    border-radius: 2px;
+  }
+  .lvl-progress .row {
+    display: flex; justify-content: space-between;
+    font-family: "Press Start 2P", monospace;
+    font-size: 7px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+  .lvl-progress .row .a { color: var(--accent-gold); }
+  .lvl-bar {
+    height: 8px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-pixel);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    position: relative;
+    overflow: hidden;
+  }
+  .lvl-fill {
+    height: 100%;
+    width: 0;
+    background:
+      repeating-linear-gradient(
+        90deg,
+        var(--accent-violet) 0 6px,
+        #6857e3 6px 8px
+      );
+    box-shadow: 0 0 10px rgba(124,109,245,0.55);
+    transition: width 1200ms cubic-bezier(.2,.7,.2,1);
+  }
+  .chapter.in .lvl-fill { width: 60%; }
+  .lvl-cap {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 10px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ---------- CHAPTER 5 — SAVE FILE ---------- */
+  #ch5 { text-align: center; }
+  #ch5 .chapter-inner { display: flex; flex-direction: column; align-items: center; }
+  .floppy-wrap {
+    width: 120px; height: 120px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 22px;
+    animation: floppyFloat 2s ease-in-out infinite;
+  }
+  @keyframes floppyFloat {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-4px); }
+  }
+  .save-title {
+    font-family: "Press Start 2P", monospace;
+    font-size: 16px;
+    color: var(--text-primary);
+    margin: 0 0 10px;
+    letter-spacing: 0.06em;
+  }
+  .save-sub {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 22px;
+  }
+  .save-btn {
+    font-family: "Press Start 2P", monospace;
+    font-size: 10px;
+    color: var(--bg-base);
+    background: var(--accent-gold);
+    border: 2px solid var(--accent-gold);
+    box-shadow: 0 0 0 1px var(--accent-gold);
+    padding: 14px 18px;
+    cursor: pointer;
+    border-radius: 2px;
+    letter-spacing: 0.08em;
+    margin-bottom: 16px;
+    transition: transform 150ms ease, box-shadow 150ms ease, filter 150ms ease, background 100ms;
+    display: inline-flex; align-items: center; gap: 10px;
+  }
+  .save-btn:hover {
+    transform: scale(1.04);
+    box-shadow: 0 0 18px var(--accent-gold), 0 0 0 1px var(--accent-gold);
+  }
+  .save-btn.flash {
+    background: #ffffff !important;
+    border-color: #ffffff !important;
+    box-shadow: 0 0 24px #ffffff, 0 0 0 1px #ffffff !important;
+  }
+  .save-btn .disk {
+    width: 14px; height: 14px;
+    display: inline-block;
+  }
+  .version {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--bg-base); }
+  ::-webkit-scrollbar-thumb { background: var(--border-pixel); border: 2px solid var(--bg-base); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent-violet); }
+
+  ::selection { background: var(--accent-violet); color: var(--bg-base); }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" data-presets="env,react">
+    const { useState, useEffect, useRef } = React;
+
+    // ---------- ICONS ----------
+    // Pixel icons for stat categories (drawn as small pixel grids in SVG)
+    const PixelIcon = ({ pixels, color }) => (
+      <svg className="stat-icon" viewBox="0 0 8 8" shapeRendering="crispEdges" aria-hidden="true">
+        {pixels.map(([x, y], i) => (
+          <rect key={i} x={x} y={y} width="1" height="1" fill={color} />
+        ))}
+      </svg>
+    );
+    // Sword (frontend)
+    const SwordPx = [
+      [4,1],[3,2],[4,2],[2,3],[3,3],[4,3],[1,4],[2,4],[3,4],[4,4],
+      [2,5],[3,5],[5,5],[1,6],[4,6],[5,6],[0,7],[5,7]
+    ];
+    // Shield (backend)
+    const ShieldPx = [
+      [2,1],[3,1],[4,1],[5,1],[1,2],[2,2],[3,2],[4,2],[5,2],[6,2],
+      [1,3],[3,3],[4,3],[6,3],[1,4],[2,4],[3,4],[4,4],[5,4],[6,4],
+      [2,5],[3,5],[4,5],[5,5],[3,6],[4,6]
+    ];
+    // Scroll (languages)
+    const ScrollPx = [
+      [1,1],[2,1],[3,1],[4,1],[5,1],[6,1],
+      [1,2],[6,2],
+      [2,3],[3,3],[4,3],[5,3],
+      [1,4],[6,4],
+      [2,5],[3,5],[4,5],[5,5],
+      [1,6],[6,6],
+      [1,7],[2,7],[3,7],[4,7],[5,7],[6,7]
+    ];
+    // Wrench (tools)
+    const WrenchPx = [
+      [4,1],[5,1],[3,2],[4,2],[6,2],[3,3],[5,3],[6,3],
+      [3,4],[4,4],[5,4],
+      [2,5],[3,5],[1,6],[2,6],[0,7],[1,7]
+    ];
+
+    // ---------- FLOPPY DISK ----------
+    const Floppy = () => (
+      <svg viewBox="0 0 16 16" width="120" height="120" shapeRendering="crispEdges" aria-hidden="true">
+        <g>
+          {/* body outline */}
+          <rect x="1" y="1" width="14" height="14" fill="#12152b" />
+          <rect x="1" y="1" width="14" height="1" fill="#1a1e38" />
+          <rect x="1" y="14" width="14" height="1" fill="#0a0c1a" />
+          <rect x="1" y="1" width="1" height="14" fill="#1a1e38" />
+          <rect x="14" y="1" width="1" height="14" fill="#0a0c1a" />
+          {/* metal slider (top) */}
+          <rect x="3" y="2" width="10" height="3" fill="#2a2d4a" />
+          <rect x="4" y="3" width="3" height="1" fill="#0a0c1a" />
+          <rect x="11" y="3" width="1" height="1" fill="#0a0c1a" />
+          {/* label area (gold) */}
+          <rect x="3" y="7" width="10" height="6" fill="#f5c542" />
+          <rect x="3" y="7" width="10" height="1" fill="#ffd970" />
+          <rect x="3" y="12" width="10" height="1" fill="#d9ad34" />
+          {/* label lines */}
+          <rect x="4" y="9" width="8" height="1" fill="#0a0c1a" />
+          <rect x="4" y="11" width="6" height="1" fill="#0a0c1a" />
+          {/* corner notch */}
+          <rect x="13" y="1" width="1" height="1" fill="#0a0c1a" />
+          <rect x="14" y="2" width="1" height="1" fill="#0a0c1a" />
+        </g>
+      </svg>
+    );
+
+    // Tiny floppy for button
+    const SmallFloppy = () => (
+      <svg className="disk" viewBox="0 0 8 8" shapeRendering="crispEdges" aria-hidden="true">
+        <rect x="0" y="0" width="8" height="8" fill="#0a0c1a"/>
+        <rect x="1" y="1" width="5" height="2" fill="#2a2d4a"/>
+        <rect x="1" y="4" width="6" height="3" fill="#f5c542"/>
+        <rect x="2" y="5" width="4" height="1" fill="#0a0c1a"/>
+      </svg>
+    );
+
+    // ---------- CHAPTER OBSERVER ----------
+    function useChapterObserver(refs) {
+      const [active, setActive] = useState(0);
+      const [seen, setSeen] = useState(() => new Set());
+
+      useEffect(() => {
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((e) => {
+              const idx = refs.findIndex(r => r.current === e.target);
+              if (idx < 0) return;
+              if (e.isIntersecting) {
+                setActive(idx);
+                setSeen(prev => {
+                  if (prev.has(idx)) return prev;
+                  const n = new Set(prev); n.add(idx); return n;
+                });
+              }
+            });
+          },
+          { threshold: [0.45], rootMargin: "-15% 0px -25% 0px" }
+        );
+        refs.forEach(r => r.current && io.observe(r.current));
+        return () => io.disconnect();
+      }, []);
+
+      return [active, seen];
+    }
+
+    // ---------- PARALLAX (CH1) ----------
+    function useParallax(ref) {
+      const [y, setY] = useState(0);
+      useEffect(() => {
+        if (!ref.current) return;
+        let raf = 0;
+        const handler = () => {
+          if (raf) return;
+          raf = requestAnimationFrame(() => {
+            raf = 0;
+            const rect = ref.current.getBoundingClientRect();
+            // 0 when chapter top at top of viewport, increases as we scroll past
+            setY(Math.max(0, -rect.top));
+          });
+        };
+        window.addEventListener("scroll", handler, { passive: true });
+        handler();
+        return () => window.removeEventListener("scroll", handler);
+      }, []);
+      return y;
+    }
+
+    // ---------- CHAPTERS ----------
+    const CHAPTERS = [
+      { n: "01", name: "ORIGIN" },
+      { n: "02", name: "GUILD" },
+      { n: "03", name: "FACTIONS" },
+      { n: "04", name: "STATS" },
+      { n: "05", name: "SAVE FILE" },
+    ];
+
+    const FACTIONS = [
+      {
+        cls: "gold",
+        name: "AAYAM",
+        role: "Marketing Manager",
+        dur: "AUG 2024 → PRESENT",
+        desc: "National tech fest for Newton School of Technology.",
+      },
+      {
+        cls: "teal",
+        name: "GIRLSCRIPT\nSUMMER OF CODE",
+        role: "Open Source Contributor",
+        dur: "SUMMER 2025",
+        desc: "Contributing to open source under the GSSoC program.",
+      },
+      {
+        cls: "violet",
+        name: "GOOGLE GENAI\nACADEMY APEC",
+        role: "Cohort Member",
+        dur: "SUMMER 2025",
+        desc: "AI/ML learning program via Hack2Skill.",
+      },
+    ];
+
+    const STATS = [
+      { cat: "FRONTEND",  icon: <PixelIcon pixels={SwordPx}  color="#3dd6ac" />, items: "React, Next.js, Tailwind CSS, Framer Motion, HTML, CSS" },
+      { cat: "BACKEND",   icon: <PixelIcon pixels={ShieldPx} color="#3dd6ac" />, items: "Node.js, Express, Supabase, PostgreSQL, REST APIs" },
+      { cat: "LANGUAGES", icon: <PixelIcon pixels={ScrollPx} color="#3dd6ac" />, items: "TypeScript, JavaScript, Python, C++" },
+      { cat: "TOOLS",     icon: <PixelIcon pixels={WrenchPx} color="#3dd6ac" />, items: "Git, GitHub, Vercel, Cloudinary, Docker (learning)" },
+    ];
+
+    // ---------- GUILD CREST ----------
+    function Crest() {
+      // 8x8 pixel shield
+      const grid = `
+        ........
+        .gggggg.
+        .gvvvvg.
+        .gvggvg.
+        .gvggvg.
+        .gvvvvg.
+        ..gvvg..
+        ...gg...
+      `.trim().split("\n").map(l => l.trim());
+      const cells = [];
+      grid.forEach((row, y) => {
+        for (let x = 0; x < 8; x++) {
+          const c = row[x];
+          let cls = "px";
+          if (c === "g") cls = "gold";
+          else if (c === "v") cls = "violet";
+          cells.push(<span key={y + "-" + x} className={cls}></span>);
+        }
+      });
+      return <div className="crest" aria-hidden="true">{cells}</div>;
+    }
+
+    // ---------- CHAPTER 1 ----------
+    function Origin({ chRef, active }) {
+      const py = useParallax(chRef);
+      return (
+        <section id="ch1" ref={chRef} className={"chapter " + (active ? "in" : "")}>
+          <div className="stars-bg"></div>
+          <div className="moon"></div>
+          <div className="mountains" aria-hidden="true">
+            <div className="mlayer far"  style={{ transform: `translateY(${py * 0.05}px)` }}></div>
+            <div className="mlayer mid"  style={{ transform: `translateY(${py * 0.12}px)` }}></div>
+            <div className="mlayer near" style={{ transform: `translateY(${py * 0.22}px)` }}></div>
+          </div>
+
+          <div className="chapter-inner">
+            <div className="cascade">
+              <div className="ch-label">CHAPTER 01</div>
+              <h1 className="ch1-title">ORIGIN</h1>
+              <div><span className="class-badge">FULL-STACK DEVELOPER · LVL 2</span></div>
+              <p className="bio">
+                Building web apps out of Bengaluru. Computer Science student at Newton
+                School of Technology. I ship things, break things, and write READMEs
+                about both.
+              </p>
+              <div className="location"><span className="pin"></span>BENGALURU, IN</div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    // ---------- CHAPTER 2 ----------
+    function Guild({ chRef, active }) {
+      return (
+        <section id="ch2" ref={chRef} className={"chapter " + (active ? "in" : "")}>
+          <div className="chapter-header">CHAPTER 02 <span className="slash">/</span> GUILD</div>
+          <div className="chapter-inner">
+            <div className="guild-card">
+              <Crest />
+              <div className="guild-label">★ GUILD ★</div>
+              <div className="guild-name">NEWTON SCHOOL<br/>OF TECHNOLOGY</div>
+              <div className="guild-role">Computer Science · Batch 2</div>
+              <div className="guild-dur">2024 → PRESENT</div>
+              <div className="guild-loc">BENGALURU, INDIA</div>
+              <div className="guild-divider"></div>
+              <div className="guild-flavor">
+                "Where code is the spell and the compiler is the dungeon master."
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    // ---------- CHAPTER 3 ----------
+    function Factions({ chRef, active }) {
+      return (
+        <section id="ch3" ref={chRef} className={"chapter " + (active ? "in" : "")}>
+          <div className="chapter-header">CHAPTER 03 <span className="slash">/</span> FACTIONS</div>
+          <div className="chapter-inner">
+            <div className="factions-row">
+              {FACTIONS.map(f => (
+                <article key={f.name} className={"faction " + f.cls}>
+                  <div className="accent"></div>
+                  <div className="faction-body">
+                    <div className="faction-name">{f.name.split("\n").map((l, i) => <span key={i}>{l}{i === 0 && f.name.includes("\n") ? <br/> : null}</span>)}</div>
+                    <div className="faction-role">{f.role}</div>
+                    <div className="faction-dur">{f.dur}</div>
+                    <div className="faction-desc">{f.desc}</div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    // ---------- CHAPTER 4 ----------
+    function Stats({ chRef, active }) {
+      return (
+        <section id="ch4" ref={chRef} className={"chapter " + (active ? "in" : "")}>
+          <div className="chapter-header">CHAPTER 04 <span className="slash">/</span> STATS</div>
+          <div className="chapter-inner">
+            <div className="cascade">
+              <div className="stat-grid">
+                {STATS.map(s => (
+                  <div key={s.cat} className="stat-panel">
+                    <div className="stat-cat">{s.icon}{s.cat}</div>
+                    <div className="stat-list">{s.items}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="lvl-progress">
+                <div className="row">
+                  <span>LVL 02 ─ CHARACTER PROGRESS</span>
+                  <span className="a">60% TO LVL 03</span>
+                </div>
+                <div className="lvl-bar"><div className="lvl-fill"></div></div>
+                <div className="lvl-cap">Est. graduation: 2027 · Current XP from coursework, hackathons & ships.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    // ---------- CHAPTER 5 ----------
+    function SaveFile({ chRef, active }) {
+      const [flash, setFlash] = useState(false);
+      const onClick = () => {
+        setFlash(true);
+        setTimeout(() => setFlash(false), 140);
+      };
+      return (
+        <section id="ch5" ref={chRef} className={"chapter " + (active ? "in" : "")}>
+          <div className="chapter-header">CHAPTER 05 <span className="slash">/</span> SAVE FILE</div>
+          <div className="chapter-inner">
+            <div className="cascade">
+              <div className="floppy-wrap"><Floppy /></div>
+              <h2 className="save-title">EXPORT SAVE FILE</h2>
+              <div className="save-sub">Download my resume as a plain document.</div>
+              <div>
+                <button className={"save-btn " + (flash ? "flash" : "")} onClick={onClick}>
+                  <SmallFloppy /> DOWNLOAD RESUME.PDF
+                </button>
+              </div>
+              <div className="version">v1.0.0 · LAST UPDATED MAY 2026</div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    // ---------- APP ----------
+    function App() {
+      const refs = [useRef(null), useRef(null), useRef(null), useRef(null), useRef(null)];
+      const [active, seen] = useChapterObserver(refs);
+
+      const goTo = (i) => {
+        refs[i].current && refs[i].current.scrollIntoView({ behavior: "smooth", block: "start" });
+      };
+
+      const isIn = (i) => seen.has(i) || active === i;
+
+      return (
+        <>
+          <header className="nav">
+            <a className="brand" href="Home.html">
+              <span className="chip">RP</span> RAAJ.DEV
+            </a>
+            <nav className="links">
+              <a href="Home.html">HOME</a>
+              <a href="Quest Board.html">QUESTS</a>
+              <a className="active" href="#">ABOUT</a>
+              <a href="Achievement Cabinet.html">CERTS</a>
+              <a href="Battle Log.html">LOG</a>
+              <a href="Contact.html">CONTACT</a>
+            </nav>
+            <span className="save">◆ SAVED · 02:14</span>
+          </header>
+
+          <aside className="tracker" aria-hidden="true">
+            <span className="line"></span>
+            {CHAPTERS.map((c, i) => (
+              <button key={c.n} className={i === active ? "active" : ""} onClick={() => goTo(i)}>
+                <span className="dot"></span>
+                {c.n}
+              </button>
+            ))}
+          </aside>
+
+          <div className="mobile-tracker">
+            {CHAPTERS.map((c, i) => (
+              <span key={c.n} className={"pip " + (i === active ? "active" : "")}></span>
+            ))}
+          </div>
+
+          <Origin   chRef={refs[0]} active={isIn(0)} />
+          <Guild    chRef={refs[1]} active={isIn(1)} />
+          <Factions chRef={refs[2]} active={isIn(2)} />
+          <Stats    chRef={refs[3]} active={isIn(3)} />
+          <SaveFile chRef={refs[4]} active={isIn(4)} />
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

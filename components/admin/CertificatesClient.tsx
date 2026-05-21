@@ -5,6 +5,7 @@ import { Plus, Edit2, Trash2, ExternalLink, Loader2, Image as ImageIcon } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { uploadImage } from "@/lib/cloudinary-upload";
+import { optimizeCloudinaryUrl } from "@/lib/utils";
 
 type Certificate = {
   id: string;
@@ -206,7 +207,7 @@ export default function CertificatesClient({ initialCertificates }: { initialCer
                 
                 {formData.image_url ? (
                   <div className="relative group aspect-[4/3] w-full max-w-sm bg-border-pixel/30 rounded overflow-hidden mt-2">
-                    <img src={formData.image_url} alt="Certificate" className="w-full h-full object-contain" />
+                    <img src={optimizeCloudinaryUrl(formData.image_url)} alt="Certificate" className="w-full h-full object-contain" />
                     <button type="button" onClick={() => setFormData({...formData, image_url: ""})} className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                       <Trash2 className="h-6 w-6 text-accent-red" />
                     </button>

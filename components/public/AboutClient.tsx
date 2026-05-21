@@ -1,127 +1,111 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
+
+const CHAPTERS = [
+  { n: "01", name: "ORIGIN" },
+  { n: "02", name: "GUILD" },
+  { n: "03", name: "FACTIONS" },
+  { n: "04", name: "STATS" },
+  { n: "05", name: "SAVE FILE" },
+];
 
 /**
- * Behaviour-only client component. Renders no visible content itself.
- * - On ≥768px: dynamically imports GSAP and attaches ScrollTrigger
- *   pin/scrub behaviour to the already-server-rendered chapter sections.
- * - On <768px: adds the CSS class "about-mobile" to #about-root,
- *   which switches pin/height rules off and enables Framer-style stacking.
- * - "Skip animation" button: removes GSAP context and adds mobile class.
+ * Drives the Character Sheet about page:
+ *  - IntersectionObserver tracks which chapter is in view (adds .in class)
+ *  - Fixed left chapter tracker + mobile pip tracker (rendered here)
+ *  - Parallax on chapter 1's mountain layers (rAF scroll listener)
+ *  - Click to scroll smoothly between chapters
  */
 export function AboutClient() {
-  const [isMobile, setIsMobile] = useState<boolean | null>(null);
-  const [forceStacked, setForceStacked] = useState(false);
+  const [active, setActive] = useState(0);
+  const seenRef = useRef<Set<number>>(new Set());
+  const ch1Ref = useRef<HTMLElement | null>(null);
 
-  // ── Viewport detection ──────────────────────────────────────────────
+  // ── IntersectionObserver: track active chapter, add .in class ──────
   useEffect(() => {
-    const mq = window.matchMedia("(max-width: 767px)");
-    setIsMobile(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
+    const chapters = Array.from(
+      document.querySelectorAll<HTMLElement>("#about-root [data-chapter]")
+    );
+    if (chapters.length === 0) return;
+
+    ch1Ref.current = chapters[0];
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          const idx = Number((e.target as HTMLElement).dataset.chapter);
+          if (e.isIntersecting) {
+            setActive(idx);
+            if (!seenRef.current.has(idx)) {
+              seenRef.current.add(idx);
+              (e.target as HTMLElement).classList.add("in");
+            }
+          }
+        });
+      },
+      { threshold: [0.45], rootMargin: "-15% 0px -25% 0px" }
+    );
+
+    chapters.forEach((c) => io.observe(c));
+    return () => io.disconnect();
   }, []);
 
-  // ── GSAP ScrollTrigger (desktop only) ──────────────────────────────
+  // ── Parallax for chapter 1 mountain layers ─────────────────────────
   useEffect(() => {
-    if (isMobile === null) return; // wait for detection
-    if (isMobile || forceStacked) {
-      // Apply mobile stacked styles via CSS class
-      document.getElementById("about-root")?.classList.add("about-mobile");
-      return;
-    }
-
-    // Remove mobile class if switching back
-    document.getElementById("about-root")?.classList.remove("about-mobile");
-
-    let ctx: { revert: () => void } | undefined;
-
-    const initGSAP = async () => {
-      const { gsap } = await import("gsap");
-      const { ScrollTrigger } = await import("gsap/ScrollTrigger");
-      gsap.registerPlugin(ScrollTrigger);
-
-      const root = document.getElementById("about-root");
-      if (!root) return;
-
-      ctx = gsap.context(() => {
-        const chapters = gsap.utils.toArray<HTMLElement>(".chapter", root);
-
-        chapters.forEach((chapter) => {
-          const header = chapter.querySelector<HTMLElement>(".chapter-header");
-          const els = chapter.querySelectorAll<HTMLElement>(".chapter-el");
-
-          // Skip initial-hide for first chapter (Origin) so there's no
-          // blank flash while GSAP loads asynchronously. Only hide ch 2+.
-          const chapterIndex = chapters.indexOf(chapter);
-          if (chapterIndex > 0) {
-            if (header) gsap.set(header, { opacity: 0, y: 30 });
-            els.forEach((el) => gsap.set(el, { opacity: 0, y: 20 }));
-          }
-
-          const tl = gsap.timeline({
-            scrollTrigger: {
-              trigger: chapter,
-              start: "top top",
-              end: "+=80%",
-              pin: true,
-              scrub: 1,
-              anticipatePin: 1,
-            },
-          });
-
-          if (header) {
-            tl.to(header, { opacity: 1, y: 0, duration: 0.3 }, 0);
-          }
-          if (els.length > 0) {
-            tl.to(
-              els,
-              { opacity: 1, y: 0, duration: 0.3, stagger: 0.1 },
-              header ? 0.2 : 0
-            );
-          }
+    let raf = 0;
+    const handler = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const el = ch1Ref.current;
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const y = Math.max(0, -rect.top);
+        el.querySelectorAll<HTMLElement>("[data-parallax]").forEach((layer) => {
+          const factor = parseFloat(layer.dataset.parallax || "0");
+          layer.style.transform = `translateY(${y * factor}px)`;
         });
-
-        // Snap between chapters
-        ScrollTrigger.create({
-          snap: {
-            snapTo: 1 / Math.max(chapters.length - 1, 1),
-            duration: { min: 0.2, max: 0.5 },
-            delay: 0.05,
-            ease: "power1.inOut",
-          },
-        });
-      }, root);
+      });
     };
+    window.addEventListener("scroll", handler, { passive: true });
+    handler();
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
 
-    initGSAP();
-
-    return () => {
-      ctx?.revert();
-    };
-  }, [isMobile, forceStacked]);
-
-  // ── Skip animation handler ──────────────────────────────────────────
-  const handleSkip = () => {
-    setForceStacked(true);
-  };
-
-  const showSkip = isMobile === false && !forceStacked;
+  // ── Click handler — scroll to chapter ─────────────────────────────
+  const goTo = useCallback((idx: number) => {
+    const target = document.querySelector<HTMLElement>(
+      `#about-root [data-chapter="${idx}"]`
+    );
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
 
   return (
     <>
-      {showSkip && (
-        <div className="fixed top-20 right-4 z-50" aria-live="polite">
+      {/* Desktop chapter tracker (left rail) */}
+      <aside className="cs-tracker" aria-label="Chapter navigation">
+        <span className="line" />
+        {CHAPTERS.map((c, i) => (
           <button
-            onClick={handleSkip}
-            className="font-mono text-[10px] uppercase tracking-wider text-text-primary/40 hover:text-accent-gold border border-border-pixel/50 hover:border-accent-gold/50 px-3 py-1.5 rounded-sm bg-bg-base/80 backdrop-blur-sm transition-colors focus:outline-none focus:ring-2 focus:ring-accent-gold"
-            aria-label="Skip scroll animations and view all chapters at once"
+            key={c.n}
+            className={i === active ? "active" : ""}
+            onClick={() => goTo(i)}
+            aria-label={`Jump to chapter ${c.n}: ${c.name}`}
+            aria-current={i === active ? "true" : undefined}
           >
-            Skip animation ↓
+            <span className="dot" />
+            {c.n}
           </button>
-        </div>
-      )}
+        ))}
+      </aside>
+
+      {/* Mobile pip tracker */}
+      <div className="cs-mobile-tracker" aria-hidden="true">
+        {CHAPTERS.map((c, i) => (
+          <span key={c.n} className={`pip ${i === active ? "active" : ""}`} />
+        ))}
+      </div>
     </>
   );
 }

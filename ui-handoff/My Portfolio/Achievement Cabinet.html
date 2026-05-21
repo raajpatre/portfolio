@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Achievement Cabinet — Raaj Patre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Press+Start+2P&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg-base:        #0a0c1a;
+    --bg-surface:     #12152b;
+    --bg-elevated:    #1a1e38;
+    --text-primary:   #e8e8f0;
+    --text-muted:     #6b7094;
+    --accent-gold:    #f5c542;
+    --accent-violet:  #7c6df5;
+    --accent-teal:    #3dd6ac;
+    --accent-red:     #f55c5c;
+    --border-pixel:   #2a2d4a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    image-rendering: pixelated;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* ---------- ROOM BACKGROUND (achievement room) ---------- */
+  .room-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: url("assets/certs-bg.jpeg");
+    background-size: cover;
+    background-position: center;
+    image-rendering: pixelated;
+  }
+  .room-bg::after {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      /* darken bottom half for content readability */
+      linear-gradient(to bottom, rgba(10,12,26,0) 0%, rgba(10,12,26,0.45) 45%, rgba(10,12,26,0.92) 100%),
+      /* slight overall dim */
+      rgba(10,12,26,0.25);
+  }
+
+  /* ---------- NAV ---------- */
+  .nav {
+    position: sticky; top: 0; z-index: 30;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px clamp(20px, 5vw, 64px);
+    border-bottom: 1px solid var(--border-pixel);
+    background: rgba(10,12,26,0.55);
+    backdrop-filter: blur(8px);
+  }
+  .nav .brand {
+    font-family: "Press Start 2P", monospace;
+    font-size: 11px; color: var(--text-primary);
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none;
+  }
+  .nav .brand .chip {
+    background: var(--accent-violet);
+    color: var(--bg-base);
+    padding: 4px 6px; font-size: 8px;
+    box-shadow: 0 0 0 1px var(--accent-violet);
+  }
+  .nav .links { display: flex; gap: 22px; }
+  .nav .links a {
+    font-family: "Press Start 2P", monospace;
+    font-size: 9px; color: var(--text-muted);
+    text-decoration: none; letter-spacing: 0.05em;
+  }
+  .nav .links a:hover { color: var(--text-primary); }
+  .nav .links a.active { color: var(--accent-gold); }
+  .nav .save {
+    font-family: "Press Start 2P", monospace;
+    font-size: 8px; color: var(--accent-teal);
+    border: 1px solid var(--border-pixel);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    padding: 6px 8px;
+  }
+
+  /* ---------- HEADER ---------- */
+  .page-header {
+    position: relative;
+    z-index: 1;
+    height: 220px;
+    overflow: hidden;
+    /* transparent so the room shelf shows through */
+    background: transparent;
+    display: flex; align-items: flex-end; justify-content: center;
+    padding-bottom: 28px;
+  }
+  .page-header::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, rgba(10,12,26,0) 0%, rgba(10,12,26,0) 50%, rgba(10,12,26,0.55) 100%);
+    pointer-events: none;
+  }
+  .page-header .inner {
+    position: relative; z-index: 1;
+    text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+  .page-header h1 {
+    font-family: "Press Start 2P", monospace;
+    font-size: clamp(16px, 3vw, 22px);
+    color: var(--accent-gold);
+    margin: 0;
+    letter-spacing: 0.08em;
+    text-shadow: 0 0 18px rgba(245,197,66,0.45);
+  }
+  .page-header .sub {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .trophy-count {
+    margin-top: 4px;
+    font-family: "Press Start 2P", monospace;
+    font-size: 8px;
+    color: var(--accent-teal);
+    background: rgba(61,214,172,0.12);
+    box-shadow: 0 0 0 1px var(--accent-teal);
+    padding: 7px 10px;
+    border-radius: 2px;
+    letter-spacing: 0.12em;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .trophy-count::before {
+    content: ""; width: 6px; height: 6px;
+    background: var(--accent-teal);
+    box-shadow: 0 0 8px var(--accent-teal);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.55;transform:scale(0.85);} }
+
+  /* ---------- GRID ---------- */
+  .grid-wrap {
+    position: relative; z-index: 1;
+    padding: 36px clamp(20px, 5vw, 64px) 80px;
+  }
+  .section-divider {
+    display: flex; align-items: center; gap: 16px;
+    font-family: "Press Start 2P", monospace;
+    font-size: 8px;
+    color: var(--text-primary);
+    letter-spacing: 0.18em;
+    margin: 28px 0 18px;
+    text-shadow: 0 0 12px rgba(10,12,26,0.9);
+  }
+  .section-divider::before, .section-divider::after {
+    content: ""; flex: 1; height: 1px; background: var(--border-pixel);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 260px);
+    justify-content: center;
+    gap: 16px;
+  }
+  @media (max-width: 920px) {
+    .grid { grid-template-columns: repeat(2, 260px); }
+  }
+  @media (max-width: 600px) {
+    .grid { grid-template-columns: 1fr; }
+    .card { width: 100% !important; max-width: 320px; }
+  }
+
+  /* ---------- ACHIEVEMENT CARD (flip) ---------- */
+  .card {
+    width: 260px;
+    height: 300px;
+    perspective: 1000px;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  .card.enter {
+    animation: cardIn 420ms ease-out forwards;
+  }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-inner {
+    position: relative;
+    width: 100%; height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .card:hover .card-inner,
+  .card.flipped .card-inner { transform: rotateY(180deg); }
+
+  .face {
+    position: absolute; inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  /* FRONT */
+  .front {
+    background: rgba(18, 21, 43, 0.88);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 2px solid var(--border-pixel);
+    box-shadow: 0 0 0 1px var(--border-pixel), 0 6px 22px rgba(0,0,0,0.45);
+    display: flex; flex-direction: column;
+  }
+  .card:hover .front {
+    box-shadow: 0 0 14px rgba(124,109,245,0.25), 0 0 0 1px var(--accent-violet), 0 6px 22px rgba(0,0,0,0.45);
+  }
+  .icon-area {
+    flex: 1.5;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(245,197,66,0.18) 0%, transparent 70%),
+      rgba(10, 12, 26, 0.55);
+    display: flex; align-items: center; justify-content: center;
+    border-bottom: 1px solid var(--border-pixel);
+    position: relative;
+    overflow: hidden;
+  }
+  .icon-area::before {
+    /* subtle inner grid */
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(rgba(124,109,245,0.04) 1px, transparent 1px) 0 0 / 16px 16px,
+      linear-gradient(90deg, rgba(124,109,245,0.04) 1px, transparent 1px) 0 0 / 16px 16px;
+    pointer-events: none;
+  }
+  .icon-area .ring {
+    position: absolute;
+    width: 110px; height: 110px;
+    border: 2px solid var(--border-pixel);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    border-radius: 50%;
+    opacity: 0.6;
+  }
+  .icon-area .trophy {
+    position: relative; z-index: 1;
+    width: 56px; height: 56px;
+    image-rendering: pixelated;
+  }
+
+  /* corner ribbon (top-right diagonal) */
+  .ribbon {
+    position: absolute;
+    top: 8px; right: -36px;
+    width: 120px; padding: 4px 0;
+    text-align: center;
+    background: rgba(61,214,172,0.18);
+    color: var(--accent-teal);
+    font-family: "Press Start 2P", monospace;
+    font-size: 6px;
+    letter-spacing: 0.16em;
+    transform: rotate(35deg);
+    box-shadow: 0 0 0 1px var(--accent-teal);
+    overflow: hidden;
+  }
+  .ribbon::before {
+    /* shimmer sweep */
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      120deg,
+      transparent 0%,
+      transparent 40%,
+      rgba(61,214,172,0.45) 50%,
+      transparent 60%,
+      transparent 100%
+    );
+    animation: shimmer 3s linear infinite;
+  }
+  @keyframes shimmer {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  .card.locked .ribbon {
+    background: rgba(107,112,148,0.12);
+    color: var(--text-muted);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+  }
+  .card.locked .ribbon::before { display: none; }
+
+  .front-foot {
+    flex: 1;
+    padding: 12px 14px 14px;
+    background: var(--bg-surface);
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .cert-title {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .cert-issuer {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+
+  /* BACK */
+  .back {
+    transform: rotateY(180deg);
+    background: rgba(26, 30, 56, 0.94);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 2px solid var(--accent-violet);
+    box-shadow: 0 0 14px rgba(124,109,245,0.35), 0 0 0 1px var(--accent-violet);
+    padding: 18px 18px 16px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    text-align: center;
+  }
+  .credential-label {
+    font-family: "Press Start 2P", monospace;
+    font-size: 7px;
+    color: var(--accent-violet);
+    letter-spacing: 0.32em;
+  }
+  .back .meta {
+    display: flex; flex-direction: column; gap: 8px;
+    padding: 4px 4px;
+  }
+  .back .cert-title-b {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 700;
+    line-height: 1.4;
+  }
+  .back .issuer-b {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .back .date-b {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--accent-teal);
+    letter-spacing: 0.06em;
+  }
+  .view-cred {
+    font-family: "Press Start 2P", monospace;
+    font-size: 7px;
+    color: var(--accent-violet);
+    background: transparent;
+    border: 2px solid var(--accent-violet);
+    box-shadow: 0 0 0 1px var(--accent-violet);
+    padding: 10px 10px;
+    cursor: pointer;
+    border-radius: 2px;
+    letter-spacing: 0.1em;
+    transition: background 150ms ease, color 150ms ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .view-cred:hover {
+    background: var(--accent-violet);
+    color: var(--bg-base);
+  }
+
+  /* ---------- LOCKED ---------- */
+  .card.locked { cursor: default; }
+  .card.locked .card-inner { transform: none !important; }
+  .card.locked .icon-area { filter: grayscale(0.85) brightness(0.6); }
+  .card.locked .front { border-color: var(--border-pixel); }
+  .card.locked .cert-title { color: var(--text-muted); }
+  .card.locked .locked-label {
+    font-family: "Press Start 2P", monospace;
+    font-size: 8px;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+    text-align: center;
+    margin-top: 6px;
+    display: block;
+  }
+  .tooltip {
+    position: absolute;
+    bottom: -32px; left: 50%; transform: translateX(-50%);
+    background: var(--bg-elevated);
+    border: 1px solid var(--accent-violet);
+    box-shadow: 0 0 0 1px var(--accent-violet);
+    color: var(--accent-violet);
+    font-family: "Press Start 2P", monospace;
+    font-size: 7px;
+    padding: 6px 8px;
+    letter-spacing: 0.1em;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 150ms ease;
+    white-space: nowrap;
+    z-index: 5;
+  }
+  .card.locked.show-tip .tooltip { opacity: 1; }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--bg-base); }
+  ::-webkit-scrollbar-thumb { background: var(--border-pixel); border: 2px solid var(--bg-base); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent-violet); }
+
+  ::selection { background: var(--accent-violet); color: var(--bg-base); }
+</style>
+</head>
+<body>
+  <div class="room-bg" aria-hidden="true"></div>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" data-presets="env,react">
+    const { useState, useEffect, useRef } = React;
+
+    // ---------- PIXEL TROPHY ICONS ----------
+    // BOOK (course / violet)
+    const BookTrophy = () => (
+      <svg className="trophy" viewBox="0 0 16 16" shapeRendering="crispEdges" aria-hidden="true">
+        {/* outer pages */}
+        <rect x="1" y="3" width="14" height="11" fill="#7c6df5" />
+        <rect x="1" y="3" width="14" height="1" fill="#9a8cff" />
+        <rect x="1" y="13" width="14" height="1" fill="#5b4cd0" />
+        {/* inner page */}
+        <rect x="2" y="4" width="12" height="9" fill="#0a0c1a" />
+        {/* spine */}
+        <rect x="7" y="3" width="2" height="11" fill="#5b4cd0" />
+        <rect x="7" y="3" width="2" height="1" fill="#9a8cff" />
+        {/* text lines left */}
+        <rect x="3" y="6" width="3" height="1" fill="#7c6df5" />
+        <rect x="3" y="8" width="4" height="1" fill="#7c6df5" />
+        <rect x="3" y="10" width="2" height="1" fill="#7c6df5" />
+        {/* text lines right */}
+        <rect x="10" y="6" width="3" height="1" fill="#7c6df5" />
+        <rect x="10" y="8" width="4" height="1" fill="#7c6df5" />
+        <rect x="10" y="10" width="2" height="1" fill="#7c6df5" />
+        {/* gold star seal */}
+        <rect x="11" y="11" width="1" height="1" fill="#f5c542" />
+        <rect x="12" y="10" width="1" height="3" fill="#f5c542" />
+        <rect x="13" y="11" width="1" height="1" fill="#f5c542" />
+        <rect x="11" y="12" width="3" height="1" fill="#f5c542" />
+      </svg>
+    );
+
+    // SHIELD (program / teal)
+    const ShieldTrophy = () => (
+      <svg className="trophy" viewBox="0 0 16 16" shapeRendering="crispEdges" aria-hidden="true">
+        {/* shield body */}
+        <rect x="3" y="2" width="10" height="1" fill="#3dd6ac" />
+        <rect x="2" y="3" width="12" height="6" fill="#3dd6ac" />
+        <rect x="3" y="9"  width="10" height="1" fill="#3dd6ac" />
+        <rect x="4" y="10" width="8"  height="1" fill="#3dd6ac" />
+        <rect x="5" y="11" width="6"  height="1" fill="#3dd6ac" />
+        <rect x="6" y="12" width="4"  height="1" fill="#3dd6ac" />
+        <rect x="7" y="13" width="2"  height="1" fill="#3dd6ac" />
+        {/* light edge */}
+        <rect x="3" y="2" width="10" height="1" fill="#6fe6c2" />
+        <rect x="2" y="3" width="1"  height="6" fill="#6fe6c2" />
+        {/* dark edge */}
+        <rect x="13" y="3" width="1" height="6" fill="#2bb38c" />
+        {/* inner emblem cross */}
+        <rect x="7" y="5" width="2" height="6" fill="#0a0c1a" />
+        <rect x="5" y="6" width="6" height="2" fill="#0a0c1a" />
+        {/* gold center pip */}
+        <rect x="7" y="6" width="2" height="2" fill="#f5c542" />
+      </svg>
+    );
+
+    // CROWN (competition / gold)
+    const CrownTrophy = () => (
+      <svg className="trophy" viewBox="0 0 16 16" shapeRendering="crispEdges" aria-hidden="true">
+        {/* peaks */}
+        <rect x="2" y="3" width="1" height="1" fill="#f5c542" />
+        <rect x="7" y="2" width="2" height="1" fill="#f5c542" />
+        <rect x="13" y="3" width="1" height="1" fill="#f5c542" />
+        {/* peak gems */}
+        <rect x="2" y="2" width="1" height="1" fill="#f55c5c" />
+        <rect x="13" y="2" width="1" height="1" fill="#7c6df5" />
+        <rect x="7" y="1" width="2" height="1" fill="#3dd6ac" />
+        {/* peak slopes */}
+        <rect x="3" y="4" width="1" height="1" fill="#f5c542" />
+        <rect x="4" y="5" width="1" height="1" fill="#f5c542" />
+        <rect x="5" y="4" width="1" height="1" fill="#f5c542" />
+        <rect x="6" y="3" width="1" height="1" fill="#f5c542" />
+        <rect x="9" y="3" width="1" height="1" fill="#f5c542" />
+        <rect x="10" y="4" width="1" height="1" fill="#f5c542" />
+        <rect x="11" y="5" width="1" height="1" fill="#f5c542" />
+        <rect x="12" y="4" width="1" height="1" fill="#f5c542" />
+        {/* band */}
+        <rect x="2" y="6" width="12" height="3" fill="#f5c542" />
+        <rect x="2" y="6" width="12" height="1" fill="#ffd970" />
+        <rect x="2" y="8" width="12" height="1" fill="#d9ad34" />
+        {/* gems on band */}
+        <rect x="4" y="7" width="1" height="1" fill="#f55c5c" />
+        <rect x="8" y="7" width="1" height="1" fill="#3dd6ac" />
+        <rect x="11" y="7" width="1" height="1" fill="#7c6df5" />
+        {/* base */}
+        <rect x="2" y="10" width="12" height="2" fill="#d9ad34" />
+        <rect x="3" y="12" width="10" height="1" fill="#a8841f" />
+      </svg>
+    );
+
+    // PADLOCK (locked)
+    const Padlock = () => (
+      <svg className="trophy" viewBox="0 0 16 16" shapeRendering="crispEdges" aria-hidden="true">
+        <rect x="5" y="3" width="6" height="1" fill="#6b7094" />
+        <rect x="4" y="4" width="1" height="3" fill="#6b7094" />
+        <rect x="11" y="4" width="1" height="3" fill="#6b7094" />
+        <rect x="3" y="7" width="10" height="7" fill="#2a2d4a" />
+        <rect x="3" y="7" width="10" height="1" fill="#3d4068" />
+        <rect x="3" y="13" width="10" height="1" fill="#1a1e38" />
+        <rect x="7" y="10" width="2" height="2" fill="#6b7094" />
+        <rect x="7" y="11" width="2" height="3" fill="#6b7094" />
+      </svg>
+    );
+
+    const ICONS = { book: BookTrophy, shield: ShieldTrophy, crown: CrownTrophy };
+
+    // ---------- DATA ----------
+    const CATEGORIES = [
+      { id: "course",     label: "COURSE · LEARNING" },
+      { id: "program",    label: "PROGRAM · COHORT" },
+      { id: "competition",label: "COMPETITION · HACKATHON" },
+    ];
+
+    const CERTS = [
+      // Programs
+      { cat: "program",     icon: "shield", title: "Google GenAI Academy APEC", issuer: "Google · Hack2Skill", date: "AUG 2025", url: "#" },
+      { cat: "program",     icon: "shield", title: "GirlScript Summer of Code", issuer: "GSSoC", date: "JUL 2025", url: "#" },
+      { cat: "program",     icon: "shield", title: "Newton School Builder Cohort", issuer: "Newton School of Tech", date: "FEB 2025", url: "#" },
+      // Courses
+      { cat: "course",      icon: "book",   title: "The Complete Web Developer Bootcamp", issuer: "Udemy", date: "MAR 2025", url: "#" },
+      { cat: "course",      icon: "book",   title: "Meta Front-End Developer", issuer: "Coursera · Meta", date: "JAN 2025", url: "#" },
+      { cat: "course",      icon: "book",   title: "Introduction to Generative AI", issuer: "Google Cloud Skills Boost", date: "DEC 2024", url: "#" },
+      // Competition
+      { cat: "competition", icon: "crown",  title: "Smart India Hackathon 2025 — Finalist", issuer: "Government of India", date: "OCT 2025", url: "#" },
+      { cat: "competition", icon: "crown",  title: "HackBangalore Open 2025 — Top 10", issuer: "HackBangalore", date: "SEP 2025", url: "#" },
+      // Locked
+      { cat: "competition", icon: "crown",  title: "??? — Quest Locked", issuer: "Coming soon", date: "—", url: "#", locked: true },
+      { cat: "program",     icon: "shield", title: "??? — Quest Locked", issuer: "Coming soon", date: "—", url: "#", locked: true },
+    ];
+
+    // ---------- CARD ----------
+    function AchCard({ c, index }) {
+      const ref = useRef(null);
+      const [enter, setEnter] = useState(false);
+      const [tip, setTip] = useState(false);
+
+      useEffect(() => {
+        const t = setTimeout(() => setEnter(true), index * 30);
+        return () => clearTimeout(t);
+      }, [index]);
+
+      const Icon = ICONS[c.icon] || BookTrophy;
+
+      const onClickLocked = () => {
+        setTip(true);
+        setTimeout(() => setTip(false), 1400);
+      };
+
+      const cls = [
+        "card",
+        enter ? "enter" : "",
+        c.locked ? "locked" : "",
+        tip ? "show-tip" : ""
+      ].join(" ").trim();
+
+      return (
+        <div ref={ref} className={cls} onClick={c.locked ? onClickLocked : undefined}>
+          <div className="card-inner">
+            {/* FRONT */}
+            <div className="face front">
+              <div className="icon-area">
+                <span className="ring" aria-hidden="true"></span>
+                {c.locked ? <Padlock /> : <Icon />}
+                <span className="ribbon">{c.locked ? "LOCKED" : "UNLOCKED"}</span>
+              </div>
+              <div className="front-foot">
+                <div className="cert-title">{c.title}</div>
+                <div className="cert-issuer">{c.issuer}</div>
+                {c.locked && <span className="locked-label">◆ LOCKED ◆</span>}
+              </div>
+            </div>
+
+            {/* BACK */}
+            {!c.locked && (
+              <div className="face back">
+                <div className="credential-label">▸ CREDENTIAL</div>
+                <div className="meta">
+                  <div className="cert-title-b">{c.title}</div>
+                  <div className="issuer-b">{c.issuer}</div>
+                  <div className="date-b">{c.date}</div>
+                </div>
+                <a className="view-cred" href={c.url} target="_blank" rel="noreferrer">
+                  [ VIEW CREDENTIAL → ]
+                </a>
+              </div>
+            )}
+          </div>
+          {c.locked && <span className="tooltip">COMING SOON</span>}
+        </div>
+      );
+    }
+
+    // ---------- APP ----------
+    function App() {
+      const unlockedCount = CERTS.filter(c => !c.locked).length;
+      const groups = CATEGORIES.map(cat => ({
+        ...cat,
+        items: CERTS.filter(c => c.cat === cat.id),
+      }));
+
+      let runningIndex = 0;
+
+      return (
+        <>
+          <header className="nav">
+            <a className="brand" href="Home.html">
+              <span className="chip">RP</span> RAAJ.DEV
+            </a>
+            <nav className="links">
+              <a href="Home.html">HOME</a>
+              <a href="Quest Board.html">QUESTS</a>
+              <a href="Character Sheet.html">ABOUT</a>
+              <a className="active" href="#">CERTS</a>
+              <a href="Battle Log.html">LOG</a>
+              <a href="Contact.html">CONTACT</a>
+            </nav>
+            <span className="save">◆ SAVED · 02:14</span>
+          </header>
+
+          <section className="page-header">
+            <div className="inner">
+              <h1>★ ACHIEVEMENT CABINET ★</h1>
+              <div className="sub">Proof of quests completed.</div>
+              <span className="trophy-count">{unlockedCount} UNLOCKED · {CERTS.length - unlockedCount} LOCKED</span>
+            </div>
+          </section>
+
+          <main className="grid-wrap">
+            {groups.map(g => (
+              <section key={g.id}>
+                <div className="section-divider">── {g.label} ──</div>
+                <div className="grid">
+                  {g.items.map((c) => {
+                    const i = runningIndex++;
+                    return <AchCard key={c.title} c={c} index={i} />;
+                  })}
+                </div>
+              </section>
+            ))}
+          </main>
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

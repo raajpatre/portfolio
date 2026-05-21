@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { PixelButton } from "@/components/public/PixelButton";
+import { PixelButton } from "@/components/ui/PixelButton";
 import { useEffect } from "react";
 
 export default function NotFound() {

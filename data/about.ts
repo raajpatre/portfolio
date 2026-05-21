@@ -15,7 +15,8 @@ export interface GuildEntry {
   role: string;
   duration: string;
   location: string;
-  logo?: string; // optional path to logo in /public
+  flavor: string;
+  logo?: string;
 }
 
 export interface FactionEntry {
@@ -23,6 +24,8 @@ export interface FactionEntry {
   role: string;
   duration: string;
   blurb: string;
+  /** Color class: gold | teal | violet */
+  cls: "gold" | "teal" | "violet";
 }
 
 export interface StatCategory {
@@ -34,6 +37,9 @@ export interface SaveFileData {
   resumePath: string;
   version: string;
   lastUpdated: string;
+  /** % of XP to next level (0-100) */
+  progressPct: number;
+  estGraduation: string;
 }
 
 // ─── Chapter 1: Origin ─────────────────────────────────────────────────
@@ -42,17 +48,18 @@ export const origin: OriginData = {
   name: "Raaj Patre",
   class: "FULL-STACK DEVELOPER",
   level: 2,
-  bio: "A passionate builder who thrives at the intersection of design and engineering. I craft pixel-perfect web experiences with a focus on performance, aesthetics, and scalable architecture. When I'm not shipping code, you'll find me exploring new frameworks, contributing to open source, or diving into game dev experiments.",
-  location: "India",
+  bio: "Building web apps out of Bengaluru. Computer Science student at Newton School of Technology. I ship things, break things, and write READMEs about both.",
+  location: "BENGALURU, IN",
 };
 
 // ─── Chapter 2: Guild ──────────────────────────────────────────────────
 
 export const guild: GuildEntry = {
   institution: "Newton School of Technology",
-  role: "Student · Batch 2",
-  duration: "2024 — Present",
-  location: "Bangalore, India",
+  role: "Computer Science · Batch 2",
+  duration: "2024 → PRESENT",
+  location: "BENGALURU, INDIA",
+  flavor: "Where code is the spell and the compiler is the dungeon master.",
 };
 
 // ─── Chapter 3: Factions ───────────────────────────────────────────────
@@ -61,23 +68,23 @@ export const factions: FactionEntry[] = [
   {
     org: "Aayam",
     role: "Marketing Manager",
-    duration: "2024 — Present",
-    blurb:
-      "Leading marketing strategy and creative campaigns for the college's flagship tech fest, driving engagement across digital and on-ground channels.",
+    duration: "AUG 2024 → PRESENT",
+    blurb: "National tech fest for Newton School of Technology.",
+    cls: "gold",
   },
   {
     org: "GirlScript Summer of Code",
-    role: "Contributor",
-    duration: "2025",
-    blurb:
-      "Open-source contributor working on community-driven projects, collaborating with developers across the globe to ship meaningful features.",
+    role: "Open Source Contributor",
+    duration: "SUMMER 2025",
+    blurb: "Contributing to open source under the GSSoC program.",
+    cls: "teal",
   },
   {
     org: "Google GenAI Academy APEC",
     role: "Cohort Member",
-    duration: "2025",
-    blurb:
-      "Selected for the Google Generative AI Academy, exploring cutting-edge AI/ML applications and building projects with Google's latest GenAI tools.",
+    duration: "SUMMER 2025",
+    blurb: "AI/ML learning program via Hack2Skill.",
+    cls: "violet",
   },
 ];
 
@@ -86,11 +93,11 @@ export const factions: FactionEntry[] = [
 export const stats: StatCategory[] = [
   {
     label: "FRONTEND",
-    skills: ["React", "Next.js", "Tailwind", "Framer Motion"],
+    skills: ["React", "Next.js", "Tailwind CSS", "Framer Motion", "HTML", "CSS"],
   },
   {
     label: "BACKEND",
-    skills: ["Node.js", "Supabase", "Postgres", "REST"],
+    skills: ["Node.js", "Express", "Supabase", "PostgreSQL", "REST APIs"],
   },
   {
     label: "LANGUAGES",
@@ -98,7 +105,7 @@ export const stats: StatCategory[] = [
   },
   {
     label: "TOOLS",
-    skills: ["Git", "Docker", "Vercel", "Cloudinary"],
+    skills: ["Git", "GitHub", "Vercel", "Cloudinary", "Docker (learning)"],
   },
 ];
 
@@ -107,5 +114,7 @@ export const stats: StatCategory[] = [
 export const saveFile: SaveFileData = {
   resumePath: "/resume/raaj-patre-resume.pdf",
   version: "v1.0.0",
-  lastUpdated: "May 2026",
+  lastUpdated: "MAY 2026",
+  progressPct: 60,
+  estGraduation: "2027",
 };

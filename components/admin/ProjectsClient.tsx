@@ -5,6 +5,7 @@ import { Plus, Edit2, Trash2, ExternalLink, Star, Loader2, Image as ImageIcon } 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { uploadImage } from "@/lib/cloudinary-upload";
+import { optimizeCloudinaryUrl } from "@/lib/utils";
 
 type Project = {
   id: string;
@@ -282,7 +283,7 @@ export default function ProjectsClient({ initialProjects }: { initialProjects: P
                   <div className="grid grid-cols-5 gap-2 mt-2">
                     {formData.screenshots.map((url, idx) => (
                       <div key={idx} className="relative group aspect-video bg-border-pixel/30 rounded overflow-hidden">
-                        <img src={url} alt={`Screenshot ${idx+1}`} className="w-full h-full object-cover" />
+                        <img src={optimizeCloudinaryUrl(url)} alt={`Screenshot ${idx+1}`} className="w-full h-full object-cover" />
                         <button type="button" onClick={() => removeImage(idx)} className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                           <Trash2 className="h-4 w-4 text-accent-red" />
                         </button>

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { PixelButton } from "@/components/public/PixelButton";
+import { PixelButton } from "@/components/ui/PixelButton";
 
 export default function Error({
   error,

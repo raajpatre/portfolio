@@ -1,0 +1,1316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Admin Portal — Raaj Patre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg-base:        #0a0c1a;
+    --bg-surface:     #12152b;
+    --bg-elevated:    #1a1e38;
+    --text-primary:   #e8e8f0;
+    --text-muted:     #6b7094;
+    --accent-gold:    #f5c542;
+    --accent-violet:  #7c6df5;
+    --accent-teal:    #3dd6ac;
+    --accent-red:     #f55c5c;
+    --border-pixel:   #2a2d4a;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 14px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  input, select, textarea, button { font-family: inherit; }
+
+  /* ---------- LOGIN ---------- */
+  .login-wrap {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .login-card {
+    width: 400px; max-width: 100%;
+    background: var(--bg-surface);
+    border: 2px solid var(--border-pixel);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    padding: 28px 28px 24px;
+    border-radius: 2px;
+  }
+  .login-eyebrow {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .lock {
+    width: 56px; height: 56px;
+    margin: 0 auto 16px;
+    display: block;
+    color: var(--accent-violet);
+  }
+  .login-title {
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 4px;
+  }
+  .login-sub {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 22px;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; position: relative; }
+  .field label {
+    font-size: 11px; color: var(--text-muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .input, .textarea, .select {
+    width: 100%;
+    background: var(--bg-base);
+    color: var(--text-primary);
+    border: 1px solid var(--border-pixel);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    padding: 10px 12px;
+    font-size: 13px;
+    border-radius: 2px;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+    outline: none;
+  }
+  .input:focus, .textarea:focus, .select:focus {
+    border-color: var(--accent-violet);
+    box-shadow: 0 0 0 1px var(--accent-violet), 0 0 8px rgba(124,109,245,0.35);
+  }
+  .input.error, .field.error .input {
+    border-color: var(--accent-red);
+    box-shadow: 0 0 0 1px var(--accent-red);
+  }
+  .input::placeholder { color: var(--text-muted); }
+
+  .pwd-wrap { position: relative; }
+  .pwd-wrap .input { padding-right: 38px; }
+  .pwd-toggle {
+    position: absolute;
+    right: 6px; top: 50%; transform: translateY(-50%);
+    background: transparent; border: 0; cursor: pointer;
+    color: var(--text-muted);
+    padding: 6px;
+    display: flex; align-items: center;
+  }
+  .pwd-toggle:hover { color: var(--text-primary); }
+  .pwd-toggle svg { width: 18px; height: 18px; }
+
+  .form-error {
+    color: var(--accent-red);
+    font-size: 12px;
+    margin: -6px 0 10px;
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    font-size: 13px; font-weight: 600;
+    padding: 11px 14px;
+    border-radius: 2px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 150ms ease, color 150ms ease, border-color 150ms ease, filter 150ms ease;
+    letter-spacing: 0.02em;
+    line-height: 1;
+  }
+  .btn.primary {
+    background: var(--accent-violet);
+    color: #ffffff;
+    border-color: var(--accent-violet);
+  }
+  .btn.primary:hover { filter: brightness(1.1); }
+  .btn.primary:active { filter: brightness(0.95); }
+  .btn.primary[disabled] { opacity: 0.6; cursor: not-allowed; }
+  .btn.teal {
+    background: var(--accent-teal);
+    color: #0a0c1a;
+    border-color: var(--accent-teal);
+  }
+  .btn.teal:hover { filter: brightness(1.08); }
+  .btn.danger {
+    background: var(--accent-red);
+    color: #ffffff;
+    border-color: var(--accent-red);
+  }
+  .btn.danger:hover { filter: brightness(1.08); }
+  .btn.outline {
+    background: transparent;
+    color: var(--text-primary);
+    border-color: var(--border-pixel);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+  }
+  .btn.outline:hover { border-color: var(--text-muted); box-shadow: 0 0 0 1px var(--text-muted); }
+  .btn.outline.violet { color: var(--accent-violet); border-color: var(--accent-violet); box-shadow: 0 0 0 1px var(--accent-violet); }
+  .btn.outline.teal   { color: var(--accent-teal); border-color: var(--accent-teal); box-shadow: 0 0 0 1px var(--accent-teal); }
+  .btn.outline.gold   { color: var(--accent-gold); border-color: var(--accent-gold); box-shadow: 0 0 0 1px var(--accent-gold); }
+  .btn.outline.red    { color: var(--accent-red); border-color: var(--accent-red); box-shadow: 0 0 0 1px var(--accent-red); }
+  .btn.outline:hover { filter: brightness(1.08); }
+  .btn.text { background: transparent; border: 0; color: var(--text-muted); }
+  .btn.text:hover { color: var(--text-primary); }
+  .btn.full { width: 100%; }
+
+  /* spinner */
+  .spin {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.35);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---------- TOP NAV ---------- */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border-pixel);
+    background: var(--bg-surface);
+    position: sticky; top: 0; z-index: 20;
+  }
+  .topbar .left { display: flex; align-items: center; gap: 24px; }
+  .topbar .brand {
+    font-size: 12px; color: var(--text-muted);
+    letter-spacing: 0.12em;
+  }
+  .topbar nav { display: flex; gap: 4px; }
+  .topbar nav a {
+    font-size: 12px;
+    color: var(--text-muted);
+    background: transparent; border: 0;
+    padding: 8px 12px;
+    border-radius: 2px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 150ms ease, background 150ms ease;
+  }
+  .topbar nav a:hover { color: var(--text-primary); background: var(--bg-elevated); }
+  .topbar nav a.active { color: var(--text-primary); background: var(--bg-elevated); }
+  .topbar .right { display: flex; align-items: center; gap: 14px; }
+  .topbar .email { font-size: 12px; color: var(--text-muted); }
+  .logout {
+    background: transparent; border: 0; padding: 6px 8px;
+    color: var(--accent-red); font-size: 12px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 150ms ease;
+  }
+  .logout:hover { background: rgba(245,92,92,0.1); }
+
+  /* ---------- DASHBOARD ---------- */
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px 64px;
+  }
+  .page-head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 22px; gap: 16px;
+  }
+  .page-head h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 4px;
+    letter-spacing: 0.02em;
+  }
+  .page-head .sub { color: var(--text-muted); font-size: 12px; }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+  @media (max-width: 720px) { .stat-row { grid-template-columns: 1fr; } }
+  .stat-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-pixel);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    padding: 20px;
+    border-radius: 2px;
+    transition: border-color 150ms ease;
+  }
+  .stat-card:hover { border-color: var(--text-muted); }
+  .stat-card .num {
+    font-size: 36px; font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.1;
+    margin-bottom: 6px;
+  }
+  .stat-card .lbl { font-size: 12px; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; }
+  .stat-card .delta { font-size: 11px; color: var(--accent-teal); margin-top: 4px; }
+
+  .quick-actions {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+
+  /* ---------- TABLE ---------- */
+  .table-wrap {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-pixel);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  table.t {
+    width: 100%; border-collapse: collapse;
+    font-size: 13px;
+  }
+  table.t thead th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-pixel);
+    background: var(--bg-surface);
+    position: sticky; top: 60px;
+  }
+  table.t tbody tr {
+    border-bottom: 1px solid var(--border-pixel);
+    transition: background 150ms ease;
+  }
+  table.t tbody tr:last-child { border-bottom: 0; }
+  table.t tbody tr:hover { background: var(--bg-elevated); }
+  table.t td {
+    padding: 14px 16px;
+    color: var(--text-primary);
+    vertical-align: middle;
+  }
+  table.t td.title { font-weight: 600; }
+  table.t td.muted { color: var(--text-muted); font-size: 12px; }
+  table.t td.center { text-align: center; }
+  table.t td.actions { text-align: right; }
+
+  .pill {
+    display: inline-flex; align-items: center;
+    font-size: 10px; font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 2px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .pill.shipped {
+    color: var(--accent-teal);
+    background: rgba(61,214,172,0.12);
+    box-shadow: 0 0 0 1px rgba(61,214,172,0.4);
+  }
+  .pill.wip {
+    color: var(--accent-red);
+    background: rgba(245,92,92,0.12);
+    box-shadow: 0 0 0 1px rgba(245,92,92,0.4);
+  }
+  .pill.draft {
+    color: var(--text-muted);
+    background: rgba(107,112,148,0.12);
+    box-shadow: 0 0 0 1px rgba(107,112,148,0.4);
+  }
+  .star { color: var(--accent-gold); }
+  .dash { color: var(--text-muted); }
+
+  .row-actions { display: inline-flex; gap: 6px; }
+  .link-btn {
+    background: transparent; border: 0; cursor: pointer;
+    font-size: 11px;
+    padding: 4px 6px;
+    border-radius: 2px;
+    transition: background 150ms ease;
+  }
+  .link-btn.edit   { color: var(--accent-violet); }
+  .link-btn.delete { color: var(--accent-red); }
+  .link-btn:hover { background: var(--bg-elevated); }
+
+  /* ---------- EMPTY ---------- */
+  .empty {
+    padding: 56px 24px;
+    text-align: center;
+    color: var(--text-muted);
+  }
+  .empty .title { font-size: 14px; color: var(--text-primary); margin-bottom: 6px; }
+  .empty .sub { font-size: 12px; margin-bottom: 18px; }
+
+  /* ---------- DRAWER ---------- */
+  .drawer-overlay {
+    position: fixed; inset: 0;
+    background: rgba(10,12,26,0.6);
+    z-index: 50;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease;
+  }
+  .drawer-overlay.open { opacity: 1; pointer-events: auto; }
+  .drawer {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: 480px; max-width: 100vw;
+    background: var(--bg-surface);
+    border-left: 1px solid var(--border-pixel);
+    box-shadow: -8px 0 24px rgba(0,0,0,0.4);
+    z-index: 60;
+    transform: translateX(100%);
+    transition: transform 220ms cubic-bezier(.2,.7,.2,1);
+    display: flex; flex-direction: column;
+  }
+  .drawer.open { transform: translateX(0); }
+  .drawer-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border-pixel);
+  }
+  .drawer-head h2 {
+    margin: 0; font-size: 14px; font-weight: 600; color: var(--text-primary);
+  }
+  .drawer-close {
+    background: transparent; border: 0; cursor: pointer;
+    color: var(--text-muted);
+    padding: 4px;
+    border-radius: 2px;
+    display: flex; align-items: center;
+  }
+  .drawer-close:hover { color: var(--text-primary); background: var(--bg-elevated); }
+  .drawer-body {
+    flex: 1; overflow: auto;
+    padding: 18px 22px;
+  }
+  .drawer-foot {
+    display: flex; gap: 10px; justify-content: flex-end;
+    padding: 14px 22px;
+    border-top: 1px solid var(--border-pixel);
+  }
+
+  /* tags editor */
+  .tag-input-wrap {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    background: var(--bg-base);
+    border: 1px solid var(--border-pixel);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    padding: 8px 8px;
+    border-radius: 2px;
+    min-height: 40px;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+  .tag-input-wrap:focus-within {
+    border-color: var(--accent-violet);
+    box-shadow: 0 0 0 1px var(--accent-violet), 0 0 8px rgba(124,109,245,0.3);
+  }
+  .tag-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(124,109,245,0.15);
+    color: var(--accent-violet);
+    border: 1px solid var(--accent-violet);
+    box-shadow: 0 0 0 1px var(--accent-violet);
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-size: 11px;
+  }
+  .tag-chip button {
+    background: transparent; border: 0;
+    color: var(--accent-violet);
+    cursor: pointer; padding: 0;
+    font-size: 13px; line-height: 1;
+  }
+  .tag-input {
+    border: 0; background: transparent;
+    color: var(--text-primary);
+    padding: 4px 6px;
+    outline: 0;
+    flex: 1; min-width: 80px;
+    font-size: 13px;
+  }
+
+  /* upload area */
+  .uploader {
+    border: 1px dashed var(--border-pixel);
+    background: var(--bg-base);
+    padding: 18px;
+    border-radius: 2px;
+    text-align: center;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: border-color 150ms ease, background 150ms ease;
+  }
+  .uploader:hover, .uploader.drag {
+    border-color: var(--accent-violet);
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+  }
+  .uploader .icon { font-size: 18px; margin-bottom: 6px; color: var(--accent-violet); }
+  .thumbs {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-top: 10px;
+  }
+  .thumb-tile {
+    position: relative;
+    width: 72px; height: 72px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-pixel);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted);
+    font-size: 10px;
+  }
+  .thumb-tile img { width: 100%; height: 100%; object-fit: cover; }
+  .thumb-tile .x {
+    position: absolute; top: 2px; right: 2px;
+    background: var(--bg-base);
+    color: var(--accent-red);
+    border: 1px solid var(--accent-red);
+    width: 18px; height: 18px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 11px;
+    border-radius: 2px;
+  }
+
+  /* custom checkbox */
+  .pix-check {
+    display: inline-flex; align-items: center; gap: 10px;
+    cursor: pointer; user-select: none;
+    font-size: 13px; color: var(--text-primary);
+  }
+  .pix-check input { display: none; }
+  .pix-check .box {
+    width: 18px; height: 18px;
+    background: var(--bg-base);
+    border: 1px solid var(--border-pixel);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    display: flex; align-items: center; justify-content: center;
+    transition: background 150ms ease, border-color 150ms ease;
+  }
+  .pix-check .box::after {
+    content: ""; width: 8px; height: 8px;
+    background: transparent;
+    transition: background 100ms ease;
+  }
+  .pix-check input:checked + .box {
+    border-color: var(--accent-teal);
+    box-shadow: 0 0 0 1px var(--accent-teal);
+    background: rgba(61,214,172,0.1);
+  }
+  .pix-check input:checked + .box::after {
+    background: var(--accent-teal);
+  }
+
+  /* ---------- DELETE MODAL ---------- */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(10,12,26,0.78);
+    z-index: 80;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    animation: fadeIn 150ms ease-out;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-pixel);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    padding: 22px 22px 18px;
+    width: min(420px, 100%);
+    border-radius: 2px;
+  }
+  .modal-card h3 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    color: var(--text-primary);
+  }
+  .modal-card p {
+    margin: 0 0 18px;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .modal-card .actions {
+    display: flex; justify-content: flex-end; gap: 10px;
+  }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg-base); }
+  ::-webkit-scrollbar-thumb { background: var(--border-pixel); border: 2px solid var(--bg-base); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+  ::selection { background: var(--accent-violet); color: #ffffff; }
+
+  /* tabs in admin */
+  .admin-tabs {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" data-presets="env,react">
+    const { useState, useEffect, useRef, useMemo } = React;
+
+    // ---------- ICONS ----------
+    const I = {
+      lock: (
+        <svg className="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="4" y="11" width="16" height="10" rx="2"/>
+          <path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+          <circle cx="12" cy="16" r="1.2" fill="currentColor"/>
+        </svg>
+      ),
+      eye: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      ),
+      eyeOff: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M17.94 17.94A10.9 10.9 0 0 1 12 19c-6.5 0-10-7-10-7a17.45 17.45 0 0 1 4.06-5.06"/>
+          <path d="M9.9 4.24A10.5 10.5 0 0 1 12 4c6.5 0 10 7 10 7a17.5 17.5 0 0 1-3.36 4.61"/>
+          <path d="M9.9 9.9a3 3 0 1 0 4.2 4.2"/>
+          <line x1="3" y1="3" x2="21" y2="21"/>
+        </svg>
+      ),
+      x: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{width: 18, height: 18}}>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+          <line x1="18" y1="6" x2="6" y2="18"/>
+        </svg>
+      ),
+      upload: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{width: 22, height: 22}}>
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      ),
+    };
+
+    // ---------- LOGIN ----------
+    function Login({ onLogin }) {
+      const [email, setEmail] = useState("raaj@inbox.dev");
+      const [pwd, setPwd] = useState("");
+      const [show, setShow] = useState(false);
+      const [loading, setLoading] = useState(false);
+      const [err, setErr] = useState("");
+
+      const submit = (ev) => {
+        ev.preventDefault();
+        setErr("");
+        if (!email || !pwd) { setErr("Email and password required."); return; }
+        setLoading(true);
+        setTimeout(() => {
+          setLoading(false);
+          if (pwd.length < 4) { setErr("Invalid credentials. Try any password 4+ chars."); return; }
+          onLogin(email);
+        }, 700);
+      };
+
+      return (
+        <div className="login-wrap">
+          <form className="login-card" onSubmit={submit} noValidate>
+            <div className="login-eyebrow">Portfolio Admin</div>
+            {I.lock}
+            <h1 className="login-title">Sign in</h1>
+            <div className="login-sub">Admin access for content management.</div>
+
+            <div className="field">
+              <label htmlFor="email">Email</label>
+              <input
+                id="email"
+                className={"input " + (err ? "error" : "")}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@domain.com"
+                autoComplete="username"
+              />
+            </div>
+
+            <div className="field">
+              <label htmlFor="pwd">Password</label>
+              <div className="pwd-wrap">
+                <input
+                  id="pwd"
+                  className={"input " + (err ? "error" : "")}
+                  type={show ? "text" : "password"}
+                  value={pwd}
+                  onChange={(e) => setPwd(e.target.value)}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                />
+                <button type="button" className="pwd-toggle" onClick={() => setShow(s => !s)} aria-label="Toggle password visibility">
+                  {show ? I.eyeOff : I.eye}
+                </button>
+              </div>
+            </div>
+
+            {err && <div className="form-error">{err}</div>}
+
+            <button className="btn primary full" type="submit" disabled={loading}>
+              {loading ? <><span className="spin"></span> Signing in…</> : "Log in"}
+            </button>
+
+            <div style={{marginTop: 16, fontSize: 11, color: "var(--text-muted)", textAlign: "center", letterSpacing: "0.04em"}}>
+              Tip: any password with 4+ characters will work in this demo.
+            </div>
+          </form>
+        </div>
+      );
+    }
+
+    // ---------- TAG INPUT ----------
+    function TagInput({ value, onChange }) {
+      const [draft, setDraft] = useState("");
+      const add = (raw) => {
+        const t = raw.trim();
+        if (!t) return;
+        if (value.includes(t)) { setDraft(""); return; }
+        onChange([...value, t]);
+        setDraft("");
+      };
+      const remove = (t) => onChange(value.filter(x => x !== t));
+      return (
+        <div className="tag-input-wrap" onClick={(e) => {
+          const input = e.currentTarget.querySelector("input");
+          input && input.focus();
+        }}>
+          {value.map(t => (
+            <span key={t} className="tag-chip">
+              {t}
+              <button type="button" onClick={() => remove(t)} aria-label={`Remove ${t}`}>×</button>
+            </span>
+          ))}
+          <input
+            className="tag-input"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === ",") {
+                e.preventDefault();
+                add(draft);
+              } else if (e.key === "Backspace" && !draft && value.length) {
+                remove(value[value.length - 1]);
+              }
+            }}
+            placeholder={value.length ? "Add tag…" : "Type a tag and press Enter"}
+          />
+        </div>
+      );
+    }
+
+    // ---------- UPLOADER ----------
+    function Uploader({ files, onChange }) {
+      const inputRef = useRef(null);
+      const [drag, setDrag] = useState(false);
+
+      const accept = (list) => {
+        const fresh = [...list].slice(0, 5 - files.length).map(f => ({
+          name: f.name,
+          url: URL.createObjectURL(f),
+        }));
+        onChange([...files, ...fresh]);
+      };
+
+      return (
+        <div>
+          <div
+            className={"uploader " + (drag ? "drag" : "")}
+            onClick={() => inputRef.current && inputRef.current.click()}
+            onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
+            onDragLeave={() => setDrag(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDrag(false);
+              if (e.dataTransfer.files.length) accept(e.dataTransfer.files);
+            }}
+          >
+            <div className="icon">{I.upload}</div>
+            <div>Click to upload or drag &amp; drop</div>
+            <div style={{fontSize: 11, marginTop: 4}}>PNG, JPG, WEBP · up to 5 files</div>
+            <input
+              ref={inputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              hidden
+              onChange={(e) => e.target.files && accept(e.target.files)}
+            />
+          </div>
+          {files.length > 0 && (
+            <div className="thumbs">
+              {files.map((f, i) => (
+                <div key={i} className="thumb-tile">
+                  <img src={f.url} alt={f.name} />
+                  <button
+                    type="button"
+                    className="x"
+                    onClick={() => onChange(files.filter((_, j) => j !== i))}
+                    aria-label="Remove"
+                  >×</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ---------- CHECKBOX ----------
+    function PixCheck({ checked, onChange, children }) {
+      return (
+        <label className="pix-check">
+          <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+          <span className="box"></span>
+          {children}
+        </label>
+      );
+    }
+
+    // ---------- DELETE MODAL ----------
+    function ConfirmDelete({ name, onCancel, onConfirm }) {
+      return (
+        <div className="modal-overlay" onClick={onCancel} role="dialog" aria-modal="true">
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <h3>Delete "{name}"?</h3>
+            <p>Are you sure? This cannot be undone.</p>
+            <div className="actions">
+              <button className="btn outline" onClick={onCancel}>Cancel</button>
+              <button className="btn danger" onClick={onConfirm}>Delete</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ---------- PROJECT DRAWER ----------
+    function ProjectDrawer({ open, initial, onClose, onSave }) {
+      const isEdit = !!(initial && initial.id);
+      const [title, setTitle] = useState("");
+      const [tagline, setTagline] = useState("");
+      const [status, setStatus] = useState("IN_PROGRESS");
+      const [featured, setFeatured] = useState(false);
+      const [tags, setTags] = useState([]);
+      const [files, setFiles] = useState([]);
+      const [repo, setRepo] = useState("");
+      const [live, setLive] = useState("");
+      const [err, setErr] = useState("");
+
+      useEffect(() => {
+        if (open) {
+          setTitle(initial?.title || "");
+          setTagline(initial?.tagline || "");
+          setStatus(initial?.status || "IN_PROGRESS");
+          setFeatured(!!initial?.featured);
+          setTags(initial?.tags || []);
+          setFiles(initial?.screenshots || []);
+          setRepo(initial?.repo || "");
+          setLive(initial?.live || "");
+          setErr("");
+        }
+      }, [open, initial]);
+
+      const save = () => {
+        if (!title.trim()) { setErr("Title is required."); return; }
+        onSave({
+          ...(initial || {}),
+          id: initial?.id || ("p-" + Date.now()),
+          title: title.trim(),
+          tagline: tagline.trim(),
+          status,
+          featured,
+          tags,
+          screenshots: files,
+          repo: repo.trim(),
+          live: live.trim(),
+          updated: new Date().toISOString().slice(0, 10),
+        });
+      };
+
+      return (
+        <>
+          <div className={"drawer-overlay " + (open ? "open" : "")} onClick={onClose} />
+          <aside className={"drawer " + (open ? "open" : "")} aria-hidden={!open}>
+            <div className="drawer-head">
+              <h2>{isEdit ? "Edit Project" : "New Project"}</h2>
+              <button className="drawer-close" onClick={onClose} aria-label="Close">{I.x}</button>
+            </div>
+            <div className="drawer-body">
+              <div className="field">
+                <label>Title</label>
+                <input
+                  className={"input " + (err ? "error" : "")}
+                  value={title}
+                  onChange={(e) => { setTitle(e.target.value); setErr(""); }}
+                  placeholder="Dungeon Dash"
+                />
+              </div>
+
+              <div className="field">
+                <label>Tagline</label>
+                <textarea
+                  className="textarea"
+                  rows="3"
+                  value={tagline}
+                  onChange={(e) => setTagline(e.target.value)}
+                  placeholder="One sentence about what this project does."
+                />
+              </div>
+
+              <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12}}>
+                <div className="field">
+                  <label>Status</label>
+                  <select className="select" value={status} onChange={(e) => setStatus(e.target.value)}>
+                    <option value="SHIPPED">Shipped</option>
+                    <option value="IN_PROGRESS">In Progress</option>
+                    <option value="DRAFT">Draft</option>
+                  </select>
+                </div>
+                <div className="field" style={{justifyContent: "flex-end"}}>
+                  <label>Featured</label>
+                  <div style={{padding: "10px 0"}}>
+                    <PixCheck checked={featured} onChange={setFeatured}>Mark as Legendary</PixCheck>
+                  </div>
+                </div>
+              </div>
+
+              <div className="field">
+                <label>Stack tags</label>
+                <TagInput value={tags} onChange={setTags} />
+              </div>
+
+              <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12}}>
+                <div className="field">
+                  <label>Repo URL</label>
+                  <input className="input" value={repo} onChange={(e) => setRepo(e.target.value)} placeholder="https://github.com/…" />
+                </div>
+                <div className="field">
+                  <label>Live URL</label>
+                  <input className="input" value={live} onChange={(e) => setLive(e.target.value)} placeholder="https://…" />
+                </div>
+              </div>
+
+              <div className="field">
+                <label>Screenshots</label>
+                <Uploader files={files} onChange={setFiles} />
+              </div>
+
+              {err && <div className="form-error">{err}</div>}
+            </div>
+            <div className="drawer-foot">
+              <button className="btn text" onClick={onClose}>Cancel</button>
+              <button className="btn teal" onClick={save}>
+                {isEdit ? "Save changes" : "Create project"}
+              </button>
+            </div>
+          </aside>
+        </>
+      );
+    }
+
+    // ---------- DATA ----------
+    const seedProjects = [
+      { id: "p1", title: "Dungeon Dash", tagline: "Real-time multiplayer maze game.", status: "SHIPPED", featured: true, tags: ["React","Node","Socket.IO"], updated: "2026-05-10", repo: "#", live: "#" },
+      { id: "p2", title: "Prompt Forge", tagline: "A studio for prompt engineers.", status: "SHIPPED", featured: true, tags: ["Next.js","Postgres","OpenAI"], updated: "2026-04-22", repo: "#", live: "#" },
+      { id: "p3", title: "Lo-Fi CLI", tagline: "Terminal music player with chiptune visualizer.", status: "SHIPPED", featured: false, tags: ["Rust","TUI"], updated: "2026-03-12" },
+      { id: "p4", title: "Inkling", tagline: "Tiny markdown notes app that syncs over CRDTs.", status: "IN_PROGRESS", featured: false, tags: ["React","TS","CRDT"], updated: "2026-05-15" },
+      { id: "p5", title: "Pixel Pomodoro", tagline: "Focus timer that levels up a fictional hamster.", status: "SHIPPED", featured: false, tags: ["React","PWA"], updated: "2026-02-04" },
+      { id: "p6", title: "Atlas Bot", tagline: "Discord bot for college-event RSVPs.", status: "IN_PROGRESS", featured: false, tags: ["Node","TS","Discord.js"], updated: "2026-05-18" },
+    ];
+
+    const seedCerts = [
+      { id: "c1", title: "Google GenAI Academy APEC", tagline: "Cohort program · Aug 2025", status: "SHIPPED", featured: true, tags: ["AI","GenAI"], updated: "2026-05-04" },
+      { id: "c2", title: "GirlScript Summer of Code", tagline: "Open source mentee · Summer 2025", status: "SHIPPED", featured: false, tags: ["Open source"], updated: "2025-07-28" },
+      { id: "c3", title: "Meta Front-End Developer", tagline: "Coursera · Meta", status: "SHIPPED", featured: false, tags: ["Frontend"], updated: "2025-01-19" },
+    ];
+
+    const seedFeed = [
+      { id: "f1", title: "Accepted into Google GenAI Academy", tagline: "WIN entry for the Battle Log.", status: "SHIPPED", featured: false, tags: ["WIN"], updated: "2026-05-12" },
+      { id: "f2", title: "Shipped portfolio v1.0", tagline: "LAUNCH entry.", status: "SHIPPED", featured: false, tags: ["LAUNCH"], updated: "2026-05-20" },
+      { id: "f3", title: "Aayam 2026 organized", tagline: "EVENT entry.", status: "SHIPPED", featured: false, tags: ["EVENT"], updated: "2026-03-05" },
+      { id: "f4", title: "GSSoC contributions ongoing", tagline: "CONTRIBUTION entry.", status: "IN_PROGRESS", featured: false, tags: ["CONTRIBUTION"], updated: "2026-04-30" },
+    ];
+
+    function statusPill(s) {
+      if (s === "SHIPPED")     return <span className="pill shipped">Shipped</span>;
+      if (s === "IN_PROGRESS") return <span className="pill wip">In Progress</span>;
+      return <span className="pill draft">Draft</span>;
+    }
+
+    // ---------- CRUD PAGE ----------
+    function CrudPage({ resource, items, setItems, onCount }) {
+      const [drawerOpen, setDrawerOpen] = useState(false);
+      const [editing, setEditing] = useState(null);
+      const [toDelete, setToDelete] = useState(null);
+
+      const openNew  = () => { setEditing(null); setDrawerOpen(true); };
+      const openEdit = (r) => { setEditing(r); setDrawerOpen(true); };
+      const onSave = (rec) => {
+        setItems(prev => {
+          const i = prev.findIndex(p => p.id === rec.id);
+          let next;
+          if (i >= 0) { next = [...prev]; next[i] = rec; }
+          else        { next = [rec, ...prev]; }
+          onCount && onCount(next.length);
+          return next;
+        });
+        setDrawerOpen(false);
+      };
+      const onConfirmDelete = () => {
+        setItems(prev => {
+          const next = prev.filter(p => p.id !== toDelete.id);
+          onCount && onCount(next.length);
+          return next;
+        });
+        setToDelete(null);
+      };
+
+      return (
+        <>
+          <div className="page-head">
+            <div>
+              <h1>{resource.title}</h1>
+              <div className="sub">{items.length} {resource.unit}{items.length === 1 ? "" : "s"} total.</div>
+            </div>
+            <button className="btn primary" onClick={openNew}>+ New</button>
+          </div>
+
+          <div className="table-wrap">
+            {items.length === 0 ? (
+              <div className="empty">
+                <div className="title">No {resource.unit}s yet</div>
+                <div className="sub">Create your first {resource.unit} to see it here.</div>
+                <button className="btn primary" onClick={openNew}>+ Create {resource.unit}</button>
+              </div>
+            ) : (
+              <table className="t">
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th className="center">Featured</th>
+                    <th>Date</th>
+                    <th style={{textAlign:"right"}}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map(r => (
+                    <tr key={r.id}>
+                      <td className="title">
+                        <div>{r.title}</div>
+                        <div className="muted" style={{padding:0, marginTop: 2}}>{r.tagline}</div>
+                      </td>
+                      <td>{statusPill(r.status)}</td>
+                      <td className="center">
+                        {r.featured ? <span className="star">★</span> : <span className="dash">—</span>}
+                      </td>
+                      <td className="muted">{r.updated}</td>
+                      <td className="actions">
+                        <span className="row-actions">
+                          <button className="link-btn edit"   onClick={() => openEdit(r)}>Edit</button>
+                          <button className="link-btn delete" onClick={() => setToDelete(r)}>Delete</button>
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          <ProjectDrawer
+            open={drawerOpen}
+            initial={editing}
+            onClose={() => setDrawerOpen(false)}
+            onSave={onSave}
+          />
+
+          {toDelete && (
+            <ConfirmDelete
+              name={toDelete.title}
+              onCancel={() => setToDelete(null)}
+              onConfirm={onConfirmDelete}
+            />
+          )}
+        </>
+      );
+    }
+
+    // ---------- DASHBOARD ----------
+    function Dashboard({ counts, onGo, onAdd }) {
+      return (
+        <>
+          <div className="page-head">
+            <div>
+              <h1>Dashboard</h1>
+              <div className="sub">Quick overview. Manage projects, certs and feed entries.</div>
+            </div>
+          </div>
+
+          <div className="stat-row">
+            <div className="stat-card">
+              <div className="num">{counts.projects}</div>
+              <div className="lbl">Projects</div>
+              <div className="delta">+2 this month</div>
+            </div>
+            <div className="stat-card">
+              <div className="num">{counts.certs}</div>
+              <div className="lbl">Certificates</div>
+              <div className="delta">+1 this month</div>
+            </div>
+            <div className="stat-card">
+              <div className="num">{counts.feed}</div>
+              <div className="lbl">Feed entries</div>
+              <div className="delta">+4 this month</div>
+            </div>
+          </div>
+
+          <div className="quick-actions">
+            <button className="btn outline violet" onClick={() => onAdd("projects")}>+ Add project</button>
+            <button className="btn outline teal"   onClick={() => onAdd("certs")}>+ Add certificate</button>
+            <button className="btn outline gold"   onClick={() => onAdd("feed")}>+ Add entry</button>
+          </div>
+
+          <div className="page-head" style={{marginTop: 8}}>
+            <div>
+              <h1 style={{fontSize: 14}}>Recent activity</h1>
+              <div className="sub">Latest edits across all resources.</div>
+            </div>
+            <button className="btn outline" onClick={() => onGo("projects")}>Manage projects →</button>
+          </div>
+
+          <div className="table-wrap">
+            <table className="t">
+              <thead>
+                <tr><th>Title</th><th>Resource</th><th>Status</th><th>Date</th></tr>
+              </thead>
+              <tbody>
+                <tr><td className="title">Dungeon Dash</td><td className="muted">Project</td><td>{statusPill("SHIPPED")}</td><td className="muted">2026-05-10</td></tr>
+                <tr><td className="title">Shipped portfolio v1.0</td><td className="muted">Feed</td><td>{statusPill("SHIPPED")}</td><td className="muted">2026-05-20</td></tr>
+                <tr><td className="title">Google GenAI Academy APEC</td><td className="muted">Certificate</td><td>{statusPill("SHIPPED")}</td><td className="muted">2026-05-04</td></tr>
+                <tr><td className="title">Atlas Bot</td><td className="muted">Project</td><td>{statusPill("IN_PROGRESS")}</td><td className="muted">2026-05-18</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </>
+      );
+    }
+
+    // ---------- APP ----------
+    function App() {
+      const [user, setUser] = useState(null);
+      const [tab, setTab] = useState("dashboard"); // dashboard | projects | certs | feed
+      const [pendingAdd, setPendingAdd] = useState(null);
+
+      const [projects, setProjects] = useState(seedProjects);
+      const [certs, setCerts] = useState(seedCerts);
+      const [feed, setFeed] = useState(seedFeed);
+
+      const counts = { projects: projects.length, certs: certs.length, feed: feed.length };
+
+      if (!user) return <Login onLogin={(em) => setUser(em)} />;
+
+      const onAdd = (key) => {
+        setTab(key);
+        setPendingAdd(key + "-" + Date.now());
+      };
+
+      // CrudPage doesn't know about pendingAdd; we use a key reset hack
+      const crudKey = (key) => key + "::" + (pendingAdd && pendingAdd.startsWith(key + "-") ? pendingAdd : "");
+
+      return (
+        <>
+          <header className="topbar">
+            <div className="left">
+              <span className="brand">PORTFOLIO ADMIN</span>
+              <nav>
+                <a className={tab === "dashboard" ? "active" : ""} onClick={() => setTab("dashboard")}>Dashboard</a>
+                <a className={tab === "projects" ? "active" : ""}  onClick={() => setTab("projects")}>Projects</a>
+                <a className={tab === "certs" ? "active" : ""}     onClick={() => setTab("certs")}>Certificates</a>
+                <a className={tab === "feed" ? "active" : ""}      onClick={() => setTab("feed")}>Feed</a>
+              </nav>
+            </div>
+            <div className="right">
+              <span className="email">{user}</span>
+              <button className="logout" onClick={() => setUser(null)}>Logout</button>
+            </div>
+          </header>
+
+          <main className="page">
+            {tab === "dashboard" && (
+              <Dashboard
+                counts={counts}
+                onGo={(t) => setTab(t)}
+                onAdd={onAdd}
+              />
+            )}
+            {tab === "projects" && (
+              <ProjectsTab
+                key={crudKey("projects")}
+                items={projects}
+                setItems={setProjects}
+                autoOpen={pendingAdd && pendingAdd.startsWith("projects-")}
+                clearAuto={() => setPendingAdd(null)}
+              />
+            )}
+            {tab === "certs" && (
+              <CertsTab
+                key={crudKey("certs")}
+                items={certs}
+                setItems={setCerts}
+                autoOpen={pendingAdd && pendingAdd.startsWith("certs-")}
+                clearAuto={() => setPendingAdd(null)}
+              />
+            )}
+            {tab === "feed" && (
+              <FeedTab
+                key={crudKey("feed")}
+                items={feed}
+                setItems={setFeed}
+                autoOpen={pendingAdd && pendingAdd.startsWith("feed-")}
+                clearAuto={() => setPendingAdd(null)}
+              />
+            )}
+          </main>
+        </>
+      );
+    }
+
+    // ---------- TAB WRAPPERS (one CRUD pattern, different titles) ----------
+    function AutoOpenWrap({ resource, items, setItems, autoOpen, clearAuto }) {
+      const ref = useRef(null);
+      useEffect(() => {
+        if (autoOpen && ref.current) {
+          ref.current.openNew();
+          clearAuto();
+        }
+      }, [autoOpen]);
+      return <CrudPageImperative ref={ref} resource={resource} items={items} setItems={setItems} />;
+    }
+    // Forward-ref version of CrudPage so Dashboard's quick actions can pop the drawer.
+    const CrudPageImperative = React.forwardRef(({ resource, items, setItems }, ref) => {
+      const [drawerOpen, setDrawerOpen] = useState(false);
+      const [editing, setEditing] = useState(null);
+      const [toDelete, setToDelete] = useState(null);
+
+      React.useImperativeHandle(ref, () => ({
+        openNew: () => { setEditing(null); setDrawerOpen(true); }
+      }));
+
+      const openNew  = () => { setEditing(null); setDrawerOpen(true); };
+      const openEdit = (r) => { setEditing(r); setDrawerOpen(true); };
+      const onSave = (rec) => {
+        setItems(prev => {
+          const i = prev.findIndex(p => p.id === rec.id);
+          if (i >= 0) { const next = [...prev]; next[i] = rec; return next; }
+          return [rec, ...prev];
+        });
+        setDrawerOpen(false);
+      };
+      const onConfirmDelete = () => {
+        setItems(prev => prev.filter(p => p.id !== toDelete.id));
+        setToDelete(null);
+      };
+
+      return (
+        <>
+          <div className="page-head">
+            <div>
+              <h1>{resource.title}</h1>
+              <div className="sub">{items.length} {resource.unit}{items.length === 1 ? "" : "s"} total.</div>
+            </div>
+            <button className="btn primary" onClick={openNew}>+ New {resource.unit}</button>
+          </div>
+
+          <div className="table-wrap">
+            {items.length === 0 ? (
+              <div className="empty">
+                <div className="title">No {resource.unit}s yet</div>
+                <div className="sub">Create your first {resource.unit} to see it here.</div>
+                <button className="btn primary" onClick={openNew}>+ Create {resource.unit}</button>
+              </div>
+            ) : (
+              <table className="t">
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th className="center">Featured</th>
+                    <th>Date</th>
+                    <th style={{textAlign:"right"}}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map(r => (
+                    <tr key={r.id}>
+                      <td className="title">
+                        <div>{r.title}</div>
+                        <div className="muted" style={{padding:0, marginTop: 2}}>{r.tagline}</div>
+                      </td>
+                      <td>{statusPill(r.status)}</td>
+                      <td className="center">
+                        {r.featured ? <span className="star">★</span> : <span className="dash">—</span>}
+                      </td>
+                      <td className="muted">{r.updated}</td>
+                      <td className="actions">
+                        <span className="row-actions">
+                          <button className="link-btn edit"   onClick={() => openEdit(r)}>Edit</button>
+                          <button className="link-btn delete" onClick={() => setToDelete(r)}>Delete</button>
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          <ProjectDrawer
+            open={drawerOpen}
+            initial={editing}
+            onClose={() => setDrawerOpen(false)}
+            onSave={onSave}
+          />
+
+          {toDelete && (
+            <ConfirmDelete
+              name={toDelete.title}
+              onCancel={() => setToDelete(null)}
+              onConfirm={onConfirmDelete}
+            />
+          )}
+        </>
+      );
+    });
+
+    function ProjectsTab(props) { return <AutoOpenWrap resource={{ title: "Projects", unit: "project" }} {...props} />; }
+    function CertsTab(props)    { return <AutoOpenWrap resource={{ title: "Certificates", unit: "certificate" }} {...props} />; }
+    function FeedTab(props)     { return <AutoOpenWrap resource={{ title: "Feed entries", unit: "entry" }} {...props} />; }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

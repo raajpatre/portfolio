@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import CertificatesClient from "./CertificatesClient";
+import CertificatesClient from "@/components/admin/CertificatesClient";
 
 export default async function CertificatesPage() {
   const supabase = createClient();

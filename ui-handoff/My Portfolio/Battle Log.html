@@ -1,0 +1,1140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Battle Log — Raaj Patre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Press+Start+2P&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg-base:        #0a0c1a;
+    --bg-surface:     #12152b;
+    --bg-elevated:    #1a1e38;
+    --text-primary:   #e8e8f0;
+    --text-muted:     #6b7094;
+    --accent-gold:    #f5c542;
+    --accent-violet:  #7c6df5;
+    --accent-teal:    #3dd6ac;
+    --accent-red:     #f55c5c;
+    --border-pixel:   #2a2d4a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    image-rendering: pixelated;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* ---------- CITY BACKGROUND ---------- */
+  .city-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: url("assets/battle-log-bg.png");
+    background-size: cover;
+    background-position: center top;
+    image-rendering: pixelated;
+  }
+  .city-bg::after {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      /* darken bottom-half for content + side-vignette */
+      linear-gradient(to bottom, rgba(10,12,26,0) 0%, rgba(10,12,26,0.35) 35%, rgba(10,12,26,0.92) 80%),
+      radial-gradient(ellipse at 50% 0%, rgba(10,12,26,0) 0%, rgba(10,12,26,0.45) 80%);
+  }
+
+  /* ---------- NAV ---------- */
+  .nav {
+    position: sticky; top: 0; z-index: 30;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px clamp(20px, 5vw, 64px);
+    border-bottom: 1px solid var(--border-pixel);
+    background: rgba(10,12,26,0.55);
+    backdrop-filter: blur(8px);
+  }
+  .nav .brand {
+    font-family: "Press Start 2P", monospace;
+    font-size: 11px; color: var(--text-primary);
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none;
+  }
+  .nav .brand .chip {
+    background: var(--accent-violet);
+    color: var(--bg-base);
+    padding: 4px 6px; font-size: 8px;
+    box-shadow: 0 0 0 1px var(--accent-violet);
+  }
+  .nav .links { display: flex; gap: 22px; }
+  .nav .links a {
+    font-family: "Press Start 2P", monospace;
+    font-size: 9px; color: var(--text-muted);
+    text-decoration: none; letter-spacing: 0.05em;
+  }
+  .nav .links a:hover { color: var(--text-primary); }
+  .nav .links a.active { color: var(--accent-gold); }
+  .nav .save {
+    font-family: "Press Start 2P", monospace;
+    font-size: 8px; color: var(--accent-teal);
+    border: 1px solid var(--border-pixel);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    padding: 6px 8px;
+  }
+
+  /* ---------- HEADER ---------- */
+  .head-wrap {
+    padding: 56px clamp(20px, 5vw, 64px) 28px;
+    background: transparent;
+    position: relative; z-index: 1;
+  }
+  .head-row {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 24px; flex-wrap: wrap;
+  }
+  .head-row h1 {
+    font-family: "Press Start 2P", monospace;
+    font-size: clamp(18px, 3.4vw, 24px);
+    color: var(--text-primary);
+    margin: 0 0 12px;
+    letter-spacing: 0.06em;
+  }
+  .head-row .sub {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px; color: var(--text-muted);
+    max-width: 520px;
+    line-height: 1.6;
+  }
+  .live {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: "Press Start 2P", monospace;
+    font-size: 7px;
+    color: var(--accent-teal);
+    border: 1px solid var(--accent-teal);
+    box-shadow: 0 0 0 1px var(--accent-teal);
+    padding: 7px 10px;
+    border-radius: 2px;
+    letter-spacing: 0.16em;
+    background: rgba(61,214,172,0.08);
+  }
+  .live .dot {
+    width: 7px; height: 7px;
+    background: var(--accent-teal);
+    box-shadow: 0 0 8px var(--accent-teal);
+    animation: blink 1s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.3; }
+  }
+
+  /* ---------- TABS ---------- */
+  .tabs {
+    display: flex; gap: 4px; flex-wrap: wrap;
+    padding: 14px clamp(20px, 5vw, 64px) 0;
+    border-bottom: 1px solid var(--border-pixel);
+    position: sticky;
+    top: 60px;
+    z-index: 20;
+    background: rgba(10,12,26,0.78);
+    backdrop-filter: blur(8px);
+  }
+  .tab {
+    background: transparent;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    padding: 12px 14px 12px;
+    cursor: pointer;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.03em;
+    transition: color 150ms ease, border-color 150ms ease;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .tab:hover { color: var(--text-primary); }
+  .tab.active {
+    color: var(--text-primary);
+    border-bottom-color: var(--accent-violet);
+  }
+  .tab .badge {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    background: var(--bg-elevated);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    padding: 2px 6px;
+    border-radius: 2px;
+    letter-spacing: 0;
+  }
+  .tab.active .badge {
+    color: var(--accent-violet);
+    box-shadow: 0 0 0 1px var(--accent-violet);
+  }
+  .tab .glyph { font-size: 11px; }
+
+  /* ---------- TIMELINE ---------- */
+  .log-wrap {
+    padding: 32px clamp(20px, 5vw, 64px) 80px;
+    max-width: 880px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+    margin: 0 auto;
+  }
+  .log {
+    position: relative;
+    padding-left: 56px;
+  }
+  .spine {
+    position: absolute;
+    top: 0; bottom: 0; left: 14px;
+    width: 2px;
+    background: var(--border-pixel);
+  }
+  .spine::after, .spine::before {
+    /* end caps */
+    content: "";
+    position: absolute;
+    left: -3px;
+    width: 8px; height: 2px;
+    background: var(--border-pixel);
+  }
+  .spine::before { top: 0; }
+  .spine::after  { bottom: 0; }
+
+  .year-divider {
+    position: relative;
+    display: flex; align-items: center; gap: 14px;
+    margin: 24px 0 22px;
+    margin-left: -56px;
+    padding-left: 56px;
+    font-family: "Press Start 2P", monospace;
+    font-size: 9px;
+    color: var(--accent-gold);
+    letter-spacing: 0.16em;
+  }
+  .year-divider::before, .year-divider::after {
+    content: ""; flex: 1; height: 1px; background: var(--border-pixel);
+  }
+  .year-divider .label {
+    padding: 0 8px;
+    background: var(--bg-base);
+  }
+
+  .entry {
+    position: relative;
+    margin-bottom: 18px;
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  .entry.enter {
+    animation: entryIn 380ms ease-out forwards;
+  }
+  @keyframes entryIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  .entry.leaving { animation: entryOut 120ms ease-in forwards; }
+  @keyframes entryOut {
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(-8px); }
+  }
+
+  /* node (diamond) */
+  .node {
+    position: absolute;
+    top: 18px;
+    left: -49px;
+    width: 10px; height: 10px;
+    background: var(--accent-gold);
+    transform: rotate(45deg);
+    box-shadow: 0 0 0 1px var(--bg-base), 0 0 0 2px var(--border-pixel);
+    z-index: 1;
+  }
+  .entry.win  .node { background: var(--accent-gold); }
+  .entry.launch  .node { background: var(--accent-teal); }
+  .entry.event   .node { background: var(--accent-violet); }
+  .entry.contrib .node { background: var(--accent-red); }
+  .entry.enter .node { animation: nodePulse 700ms ease-out 200ms 1; }
+  @keyframes nodePulse {
+    0%   { transform: rotate(45deg) scale(1); box-shadow: 0 0 0 1px var(--bg-base), 0 0 0 2px var(--border-pixel); }
+    50%  { transform: rotate(45deg) scale(1.4); box-shadow: 0 0 0 1px var(--bg-base), 0 0 14px currentColor; }
+    100% { transform: rotate(45deg) scale(1); box-shadow: 0 0 0 1px var(--bg-base), 0 0 0 2px var(--border-pixel); }
+  }
+  .entry.win  .node, .entry.win  { --cat: var(--accent-gold); }
+  .entry.launch  .node, .entry.launch  { --cat: var(--accent-teal); }
+  .entry.event   .node, .entry.event   { --cat: var(--accent-violet); }
+  .entry.contrib .node, .entry.contrib { --cat: var(--accent-red); }
+  .entry .node { color: var(--cat); } /* used by box-shadow `currentColor` */
+
+  /* connector line node → card */
+  .connector {
+    position: absolute;
+    top: 22px;
+    left: -38px;
+    width: 38px;
+    height: 1px;
+    background: var(--border-pixel);
+  }
+
+  .card {
+    background: var(--bg-surface);
+    border: 2px solid var(--border-pixel);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    border-left: 3px solid var(--cat);
+    padding: 14px 16px 14px;
+    border-radius: 2px;
+    transition: background 150ms ease, border-left-color 150ms ease, box-shadow 150ms ease;
+  }
+  .card:hover {
+    background: var(--bg-elevated);
+    box-shadow: 0 0 12px rgba(124,109,245,0.15), 0 0 0 1px var(--border-pixel);
+  }
+  .entry.win  .card:hover { box-shadow: 0 0 12px rgba(245,197,66,0.22), 0 0 0 1px var(--border-pixel); }
+  .entry.launch .card:hover { box-shadow: 0 0 12px rgba(61,214,172,0.22), 0 0 0 1px var(--border-pixel); }
+  .entry.event  .card:hover { box-shadow: 0 0 12px rgba(124,109,245,0.22), 0 0 0 1px var(--border-pixel); }
+  .entry.contrib .card:hover { box-shadow: 0 0 12px rgba(245,92,92,0.22), 0 0 0 1px var(--border-pixel); }
+  .card:hover { border-left-width: 3px; filter: brightness(1.05); }
+
+  .card-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px;
+    gap: 8px;
+  }
+  .cat-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: "Press Start 2P", monospace;
+    font-size: 7px;
+    color: var(--cat);
+    letter-spacing: 0.12em;
+  }
+  .cat-tag svg { width: 14px; height: 14px; }
+  .stamp {
+    font-family: "Press Start 2P", monospace;
+    font-size: 8px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+  }
+  .body {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    color: var(--text-primary);
+    line-height: 1.7;
+  }
+  .foot {
+    margin-top: 10px;
+  }
+  .view-link {
+    font-family: "Press Start 2P", monospace;
+    font-size: 7px;
+    color: var(--text-muted);
+    background: transparent;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    letter-spacing: 0.1em;
+    transition: color 150ms ease;
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .view-link:hover { color: var(--cat); }
+  .view-link .arrow { font-size: 9px; }
+
+  .empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-muted);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+  }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--bg-base); }
+  ::-webkit-scrollbar-thumb { background: var(--border-pixel); border: 2px solid var(--bg-base); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent-violet); }
+  ::selection { background: var(--accent-violet); color: var(--bg-base); }
+
+  /* ---------- PHOTO THUMBS (card) ---------- */
+  .thumb-strip {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+    align-items: stretch;
+  }
+  .thumb {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-pixel);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    overflow: hidden;
+    transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+    cursor: pointer;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .thumb:hover {
+    border-color: var(--cat);
+    box-shadow: 0 0 8px var(--cat), 0 0 0 1px var(--cat);
+    transform: translateY(-1px);
+  }
+  .thumb image-slot {
+    display: block;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    --image-slot-bg: var(--bg-elevated);
+  }
+  /* default placeholder text inside thumb */
+  .thumb .placeholder {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: "Press Start 2P", monospace;
+    font-size: 7px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    pointer-events: none;
+  }
+  .thumb.more {
+    display: flex; align-items: center; justify-content: center;
+    font-family: "Press Start 2P", monospace;
+    font-size: 9px;
+    color: var(--cat);
+    cursor: pointer;
+  }
+
+  /* ---------- MODAL ---------- */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    z-index: 100;
+    background: rgba(10,12,26,0.86);
+    backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    animation: fadeIn 180ms ease-out;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .modal {
+    width: min(960px, 100%);
+    max-height: calc(100vh - 48px);
+    background: var(--bg-surface);
+    border: 2px solid var(--cat, var(--accent-violet));
+    box-shadow: 0 0 24px var(--cat, var(--accent-violet)), 0 0 0 1px var(--cat, var(--accent-violet));
+    border-radius: 2px;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    animation: modalIn 220ms cubic-bezier(.2,.7,.2,1);
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.94); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  .modal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-pixel);
+    background: var(--bg-surface);
+    gap: 12px;
+  }
+  .modal-head .left { display: flex; align-items: center; gap: 14px; }
+  .modal-head .cat-tag { font-size: 8px; }
+  .modal-head .cat-tag svg { width: 16px; height: 16px; }
+  .modal-head .stamp {
+    font-family: "Press Start 2P", monospace;
+    font-size: 8px; color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+  .modal-close {
+    font-family: "Press Start 2P", monospace;
+    font-size: 9px; color: var(--text-muted);
+    background: transparent;
+    border: 1px solid var(--border-pixel);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    padding: 6px 8px;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+  .modal-close:hover { color: var(--text-primary); border-color: var(--text-muted); box-shadow: 0 0 0 1px var(--text-muted); }
+
+  .modal-body {
+    display: grid;
+    grid-template-columns: 1fr;
+    overflow: auto;
+  }
+  .modal-body.has-photos { grid-template-columns: minmax(0, 1.4fr) minmax(280px, 1fr); }
+  @media (max-width: 820px) {
+    .modal-body.has-photos { grid-template-columns: 1fr; }
+  }
+
+  /* Carousel */
+  .carousel {
+    position: relative;
+    background: var(--bg-base);
+    border-right: 1px solid var(--border-pixel);
+    min-height: 360px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    user-select: none;
+  }
+  @media (max-width: 820px) {
+    .carousel { border-right: none; border-bottom: 1px solid var(--border-pixel); min-height: 260px; }
+  }
+  .carousel-stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    max-height: 520px;
+    background:
+      linear-gradient(rgba(124,109,245,0.04) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, rgba(124,109,245,0.04) 1px, transparent 1px) 0 0 / 32px 32px,
+      var(--bg-base);
+  }
+  .carousel-stage image-slot {
+    position: absolute; inset: 12px;
+    width: calc(100% - 24px);
+    height: calc(100% - 24px);
+    --image-slot-bg: transparent;
+    pointer-events: auto;
+  }
+  .carousel-nav {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    border: 2px solid var(--cat, var(--accent-violet));
+    box-shadow: 0 0 10px var(--cat, var(--accent-violet)), 0 0 0 1px var(--cat, var(--accent-violet));
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: "Press Start 2P", monospace;
+    font-size: 12px;
+    z-index: 5;
+    transition: transform 150ms ease, filter 150ms ease;
+  }
+  .carousel-nav:hover { filter: brightness(1.15); transform: translateY(-50%) scale(1.05); }
+  .carousel-nav:disabled { opacity: 0.35; cursor: not-allowed; }
+  .carousel-nav.prev { left: 10px; }
+  .carousel-nav.next { right: 10px; }
+
+  .carousel-meta {
+    position: absolute;
+    top: 12px; left: 12px;
+    font-family: "Press Start 2P", monospace;
+    font-size: 8px;
+    color: var(--text-muted);
+    background: rgba(10,12,26,0.7);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    padding: 6px 8px;
+    letter-spacing: 0.1em;
+    z-index: 4;
+  }
+  .carousel-dots {
+    position: absolute;
+    bottom: 14px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 6px;
+    z-index: 4;
+  }
+  .carousel-dots .dot {
+    width: 8px; height: 8px;
+    background: transparent;
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    cursor: pointer;
+  }
+  .carousel-dots .dot.active {
+    background: var(--cat, var(--accent-violet));
+    box-shadow: 0 0 8px var(--cat, var(--accent-violet)), 0 0 0 1px var(--cat, var(--accent-violet));
+  }
+
+  .carousel-empty {
+    position: relative; z-index: 1;
+    text-align: center;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    color: var(--text-muted);
+    padding: 30px 20px;
+  }
+  .carousel-empty .hint {
+    font-family: "Press Start 2P", monospace;
+    font-size: 8px;
+    color: var(--text-muted);
+    margin-top: 12px;
+    letter-spacing: 0.1em;
+  }
+
+  /* Modal text side */
+  .modal-text {
+    padding: 20px 22px;
+    overflow: auto;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .modal-text h2 {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 16px;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.5;
+    font-weight: 700;
+  }
+  .modal-text .body {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    color: var(--text-primary);
+    line-height: 1.75;
+  }
+  .modal-text .detail {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.75;
+    border-left: 2px solid var(--cat, var(--accent-violet));
+    padding-left: 12px;
+  }
+  .modal-text .meta-row {
+    display: flex; justify-content: space-between;
+    font-family: "Press Start 2P", monospace;
+    font-size: 7px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-pixel);
+  }
+  .modal-text .meta-row .val { color: var(--cat, var(--accent-violet)); }
+
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .photo-grid .mini {
+    aspect-ratio: 1 / 1;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-pixel);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+  .photo-grid .mini.active {
+    border-color: var(--cat);
+    box-shadow: 0 0 8px var(--cat), 0 0 0 1px var(--cat);
+  }
+  .photo-grid image-slot {
+    width: 100%; height: 100%;
+    --image-slot-bg: var(--bg-elevated);
+    pointer-events: none;
+  }
+
+  .modal-help {
+    font-family: "Press Start 2P", monospace;
+    font-size: 7px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+  .modal-help kbd {
+    display: inline-block;
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    box-shadow: 0 0 0 1px var(--border-pixel);
+    padding: 3px 5px;
+    margin: 0 2px;
+    font-family: "Press Start 2P", monospace;
+    font-size: 7px;
+  }
+</style>
+</head>
+<body>
+  <div class="city-bg" aria-hidden="true"></div>
+  <div id="root"></div>
+
+  <script src="image-slot.js"></script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" data-presets="env,react">
+    const { useState, useMemo, useEffect, useRef } = React;
+
+    // ---------- PIXEL ICONS ----------
+    const Trophy = ({color}) => (
+      <svg viewBox="0 0 16 16" shapeRendering="crispEdges" aria-hidden="true">
+        <g fill={color}>
+          <rect x="4" y="2" width="8" height="1"/>
+          <rect x="3" y="3" width="10" height="1"/>
+          <rect x="3" y="4" width="1" height="3"/>
+          <rect x="12" y="4" width="1" height="3"/>
+          <rect x="4" y="7" width="8" height="1"/>
+          <rect x="5" y="8" width="6" height="1"/>
+          <rect x="7" y="9" width="2" height="2"/>
+          <rect x="5" y="11" width="6" height="1"/>
+          <rect x="4" y="12" width="8" height="1"/>
+          {/* arms */}
+          <rect x="1" y="4" width="2" height="1"/>
+          <rect x="1" y="5" width="1" height="2"/>
+          <rect x="2" y="6" width="1" height="1"/>
+          <rect x="13" y="4" width="2" height="1"/>
+          <rect x="14" y="5" width="1" height="2"/>
+          <rect x="13" y="6" width="1" height="1"/>
+        </g>
+      </svg>
+    );
+    const Rocket = ({color}) => (
+      <svg viewBox="0 0 16 16" shapeRendering="crispEdges" aria-hidden="true">
+        <g fill={color}>
+          <rect x="7" y="1" width="2" height="1"/>
+          <rect x="6" y="2" width="4" height="1"/>
+          <rect x="5" y="3" width="6" height="1"/>
+          <rect x="5" y="4" width="6" height="6"/>
+          <rect x="4" y="6" width="1" height="3"/>
+          <rect x="11" y="6" width="1" height="3"/>
+          <rect x="3" y="8" width="1" height="2"/>
+          <rect x="12" y="8" width="1" height="2"/>
+          <rect x="6" y="10" width="4" height="1"/>
+          <rect x="6" y="11" width="1" height="2"/>
+          <rect x="9" y="11" width="1" height="2"/>
+          <rect x="7" y="13" width="2" height="1"/>
+        </g>
+        {/* window */}
+        <rect x="7" y="5" width="2" height="2" fill="#0a0c1a"/>
+      </svg>
+    );
+    const Mic = ({color}) => (
+      <svg viewBox="0 0 16 16" shapeRendering="crispEdges" aria-hidden="true">
+        <g fill={color}>
+          <rect x="6" y="1" width="4" height="1"/>
+          <rect x="5" y="2" width="6" height="6"/>
+          <rect x="6" y="8" width="4" height="1"/>
+          <rect x="4" y="6" width="1" height="2"/>
+          <rect x="11" y="6" width="1" height="2"/>
+          <rect x="5" y="9" width="1" height="1"/>
+          <rect x="10" y="9" width="1" height="1"/>
+          <rect x="6" y="10" width="4" height="1"/>
+          <rect x="7" y="11" width="2" height="2"/>
+          <rect x="5" y="13" width="6" height="1"/>
+        </g>
+      </svg>
+    );
+    const Merge = ({color}) => (
+      <svg viewBox="0 0 16 16" shapeRendering="crispEdges" aria-hidden="true">
+        <g fill={color}>
+          {/* left branch dot */}
+          <rect x="3" y="2" width="2" height="2"/>
+          <rect x="3" y="4" width="1" height="9"/>
+          {/* right branch dot */}
+          <rect x="11" y="2" width="2" height="2"/>
+          <rect x="12" y="4" width="1" height="3"/>
+          {/* curve down to merge */}
+          <rect x="11" y="7" width="1" height="1"/>
+          <rect x="10" y="8" width="1" height="1"/>
+          <rect x="9" y="9" width="1" height="1"/>
+          <rect x="5" y="10" width="4" height="1"/>
+          {/* merge dot */}
+          <rect x="3" y="13" width="2" height="2"/>
+        </g>
+      </svg>
+    );
+
+    const CATEGORIES = [
+      { key: "ALL", label: "ALL", glyph: "◆", color: null },
+      { key: "WIN", label: "WINS", glyph: "★", color: "var(--accent-gold)", icon: Trophy },
+      { key: "LAUNCH", label: "LAUNCHES", glyph: "▲", color: "var(--accent-teal)", icon: Rocket },
+      { key: "EVENT", label: "EVENTS", glyph: "♪", color: "var(--accent-violet)", icon: Mic },
+      { key: "CONTRIBUTION", label: "CONTRIBUTIONS", glyph: "⌥", color: "var(--accent-red)", icon: Merge },
+    ];
+    const CAT_BY_KEY = Object.fromEntries(CATEGORIES.map(c => [c.key, c]));
+
+    // ---------- DATA ----------
+    const ENTRIES = [
+      {
+        id: "genai",
+        cat: "WIN", year: 2026, date: "MAY 2026",
+        text: "Accepted into Google GenAI Academy APEC program via Hack2Skill.",
+        detail: "A 12-week cohort program focused on applied generative AI — model fine-tuning, retrieval, evaluation, and deployment. Met builders across APEC, ran weekend sprints, shipped a Gemini-backed search assistant for the final showcase.",
+        photos: 4, url: "#"
+      },
+      {
+        id: "portfolio",
+        cat: "LAUNCH", year: 2026, date: "MAY 2026",
+        text: "Shipped portfolio v1.0 — the very site you're reading this on.",
+        detail: "A pixel-RPG themed personal site. Welcome screen, hero, quest board, character sheet, achievement cabinet, and this battle log. Hand-rolled CSS, no framework bloat, just JetBrains Mono and Press Start 2P doing the heavy lifting.",
+        photos: 3, url: "#"
+      },
+      {
+        id: "gssoc",
+        cat: "CONTRIBUTION", year: 2026, date: "APR 2026",
+        text: "Contributing to open source projects under GSSoC 2026.",
+        detail: "Merged PRs across two GSSoC repos this month — accessibility fixes, a hot-reload bug squashed, and a new Markdown export pipeline. Mentor: @anon. PRs reviewed in <24h, which is its own small miracle.",
+        photos: 5, url: "#"
+      },
+      {
+        id: "aayam2026",
+        cat: "EVENT", year: 2026, date: "MAR 2026",
+        text: "Organized Aayam 2026 — Newton School's national tech fest.",
+        detail: "Three-day campus tech fest with 60+ events, 4 keynotes and 1.2k attendees from across India. I led marketing — landing page, ticketing flow, sponsor decks, and the all-too-real 2 AM print runs.",
+        photos: 6, url: "#"
+      },
+      {
+        id: "aayam-site",
+        cat: "LAUNCH", year: 2026, date: "FEB 2026",
+        text: "Launched aayamfest.com — the official Aayam tech fest site.",
+        detail: "Next.js + Tailwind, with a custom CMS for events, judges, and sponsors. Edge-cached at the country level so the site stayed up through the registration spike on launch day.",
+        photos: 4, url: "#"
+      },
+      {
+        id: "vajrax",
+        cat: "WIN", year: 2026, date: "JAN 2026",
+        text: "VajraX passed full security audit and shipped publicly.",
+        detail: "Third-party pentest, no criticals, two highs patched in 48h. v1.0 went out the door with rotating tokens, content-security policy lockdown, and signed releases. Big sigh of relief.",
+        photos: 3, url: "#"
+      },
+      {
+        id: "finance",
+        cat: "CONTRIBUTION", year: 2025, date: "DEC 2025",
+        text: "MyFinance (rough-bills) — Phase 6 hardening complete.",
+        detail: "OCR pipeline overhaul, sub-100ms p95 on the receipts endpoint, and a wired-up Postgres-to-S3 nightly. Closed 23 issues, opened 4 new ones (such is the way).",
+        photos: 3, url: "#"
+      },
+      {
+        id: "aayam-team",
+        cat: "EVENT", year: 2025, date: "OCT 2025",
+        text: "Joined Aayam core team as Marketing Manager.",
+        detail: "Brought in to own marketing for the 2026 edition — branding, socials, content calendar, partner outreach. First task: a 14-day teaser drop that nearly broke our DMs.",
+        photos: 2, url: null
+      },
+    ];
+
+    const CAT_CLASS = { WIN: "win", LAUNCH: "launch", EVENT: "event", CONTRIBUTION: "contrib" };
+    const CAT_LABEL = { WIN: "WIN", LAUNCH: "LAUNCH", EVENT: "EVENT", CONTRIBUTION: "CONTRIBUTION" };
+
+    // ---------- ENTRY ----------
+    function Entry({ e, index, onOpen }) {
+      const [enter, setEnter] = useState(false);
+      useEffect(() => {
+        const t = setTimeout(() => setEnter(true), index * 60);
+        return () => clearTimeout(t);
+      }, [index]);
+      const meta = CAT_BY_KEY[e.cat];
+      const Icon = meta.icon;
+      const photoCount = e.photos || 0;
+      const thumbsToShow = Math.min(photoCount, 4);
+      const extra = photoCount - thumbsToShow;
+
+      return (
+        <div className={"entry " + CAT_CLASS[e.cat] + " " + (enter ? "enter" : "")}>
+          <span className="node" aria-hidden="true"></span>
+          <span className="connector" aria-hidden="true"></span>
+          <div className="card">
+            <div className="card-head">
+              <span className="cat-tag">
+                <Icon color={meta.color} />
+                {CAT_LABEL[e.cat]}
+              </span>
+              <span className="stamp">[{e.date}]</span>
+            </div>
+            <div className="body">{e.text}</div>
+
+            {photoCount > 0 && (
+              <div className="thumb-strip" onClick={() => onOpen(e)}>
+                {Array.from({length: thumbsToShow}).map((_, i) => (
+                  <div key={i} className="thumb" title="Click to open gallery">
+                    <image-slot
+                      id={`log-${e.id}-${i}`}
+                      shape="rect"
+                      radius="0"
+                      placeholder=" "
+                    ></image-slot>
+                    <span className="placeholder">PHOTO {i+1}</span>
+                  </div>
+                ))}
+                {extra > 0 && (
+                  <div className="thumb more" title="More photos">
+                    +{extra}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="foot">
+              <button
+                className="view-link"
+                onClick={() => onOpen(e)}
+              >
+                [ VIEW <span className="arrow">→</span> ]
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ---------- MODAL ----------
+    function Modal({ entry, onClose }) {
+      const meta = CAT_BY_KEY[entry.cat];
+      const Icon = meta.icon;
+      const photoCount = entry.photos || 0;
+      const [idx, setIdx] = useState(0);
+
+      const prev = () => setIdx(i => (photoCount > 0 ? (i - 1 + photoCount) % photoCount : 0));
+      const next = () => setIdx(i => (photoCount > 0 ? (i + 1) % photoCount : 0));
+
+      useEffect(() => {
+        const k = (ev) => {
+          if (ev.key === "Escape") onClose();
+          else if (ev.key === "ArrowLeft")  prev();
+          else if (ev.key === "ArrowRight") next();
+        };
+        window.addEventListener("keydown", k);
+        document.body.style.overflow = "hidden";
+        return () => {
+          window.removeEventListener("keydown", k);
+          document.body.style.overflow = "";
+        };
+      }, [photoCount]);
+
+      // touch / mouse swipe
+      const dragRef = useRef({ active: false, x0: 0 });
+      const onDown = (ev) => {
+        dragRef.current = { active: true, x0: ev.touches ? ev.touches[0].clientX : ev.clientX };
+      };
+      const onUp = (ev) => {
+        if (!dragRef.current.active) return;
+        const x1 = ev.changedTouches ? ev.changedTouches[0].clientX : ev.clientX;
+        const dx = x1 - dragRef.current.x0;
+        dragRef.current.active = false;
+        if (Math.abs(dx) > 50) { dx < 0 ? next() : prev(); }
+      };
+
+      const catVar = (
+        entry.cat === "WIN"          ? "var(--accent-gold)"   :
+        entry.cat === "LAUNCH"       ? "var(--accent-teal)"   :
+        entry.cat === "EVENT"        ? "var(--accent-violet)" :
+        "var(--accent-red)"
+      );
+
+      return (
+        <div
+          className="modal-overlay"
+          onClick={onClose}
+          role="dialog"
+          aria-modal="true"
+          style={{ "--cat": catVar }}
+        >
+          <div className="modal" onClick={(ev) => ev.stopPropagation()}>
+            <div className="modal-head">
+              <div className="left">
+                <span className="cat-tag" style={{ color: catVar, display: "inline-flex", alignItems: "center", gap: 8, fontFamily: '"Press Start 2P", monospace', letterSpacing: "0.12em" }}>
+                  <Icon color={catVar} />
+                  {CAT_LABEL[entry.cat]}
+                </span>
+                <span className="stamp">[{entry.date}]</span>
+              </div>
+              <button className="modal-close" onClick={onClose} aria-label="Close">× ESC</button>
+            </div>
+
+            <div className={"modal-body " + (photoCount > 0 ? "has-photos" : "")}>
+              {photoCount > 0 && (
+                <div
+                  className="carousel"
+                  onMouseDown={onDown} onMouseUp={onUp}
+                  onTouchStart={onDown} onTouchEnd={onUp}
+                >
+                  <span className="carousel-meta">PHOTO {idx + 1} / {photoCount}</span>
+                  <div className="carousel-stage">
+                    <image-slot
+                      key={`big-${entry.id}-${idx}`}
+                      id={`log-${entry.id}-${idx}`}
+                      shape="rect"
+                      radius="0"
+                      placeholder="Drop your photo here"
+                    ></image-slot>
+                  </div>
+                  {photoCount > 1 && (
+                    <>
+                      <button className="carousel-nav prev" onClick={prev} aria-label="Previous photo">◀</button>
+                      <button className="carousel-nav next" onClick={next} aria-label="Next photo">▶</button>
+                      <div className="carousel-dots">
+                        {Array.from({length: photoCount}).map((_, i) => (
+                          <span
+                            key={i}
+                            className={"dot " + (i === idx ? "active" : "")}
+                            onClick={() => setIdx(i)}
+                          ></span>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              <div className="modal-text">
+                <h2>{entry.text}</h2>
+                {entry.detail && <div className="detail">{entry.detail}</div>}
+
+                {photoCount > 0 && (
+                  <div>
+                    <div className="modal-help" style={{marginBottom: 6}}>▸ GALLERY ({photoCount})</div>
+                    <div className="photo-grid">
+                      {Array.from({length: photoCount}).map((_, i) => (
+                        <div
+                          key={i}
+                          className={"mini " + (i === idx ? "active" : "")}
+                          onClick={() => setIdx(i)}
+                          title={`Open photo ${i+1}`}
+                        >
+                          <image-slot
+                            id={`log-${entry.id}-${i}`}
+                            shape="rect"
+                            radius="0"
+                            placeholder=" "
+                          ></image-slot>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="modal-help">
+                  <kbd>←</kbd> <kbd>→</kbd> NAVIGATE · <kbd>ESC</kbd> CLOSE · DRAG/SWIPE TO MOVE
+                </div>
+
+                <div className="meta-row">
+                  <span>QUEST ID</span>
+                  <span className="val">{entry.id.toUpperCase()}-{entry.date.replace(/ /g, "-")}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ---------- APP ----------
+    function App() {
+      const [tab, setTab] = useState("ALL");
+      const [shown, setShown] = useState("ALL");
+      const [phase, setPhase] = useState("in");
+      const [openEntry, setOpenEntry] = useState(null);
+
+      // counts per category
+      const counts = useMemo(() => {
+        const c = { ALL: ENTRIES.length };
+        ENTRIES.forEach(e => { c[e.cat] = (c[e.cat] || 0) + 1; });
+        return c;
+      }, []);
+
+      // filter transition
+      useEffect(() => {
+        if (tab === shown) return;
+        setPhase("out");
+        const t = setTimeout(() => { setShown(tab); setPhase("in"); }, 110);
+        return () => clearTimeout(t);
+      }, [tab]);
+
+      const filtered = useMemo(() => {
+        if (shown === "ALL") return ENTRIES;
+        return ENTRIES.filter(e => e.cat === shown);
+      }, [shown]);
+
+      // Group by year for separators
+      const grouped = useMemo(() => {
+        const years = [];
+        const map = {};
+        filtered.forEach(e => {
+          if (!map[e.year]) { map[e.year] = []; years.push(e.year); }
+          map[e.year].push(e);
+        });
+        return years.map(y => ({ year: y, items: map[y] }));
+      }, [filtered]);
+
+      return (
+        <>
+          <header className="nav">
+            <a className="brand" href="Home.html">
+              <span className="chip">RP</span> RAAJ.DEV
+            </a>
+            <nav className="links">
+              <a href="Home.html">HOME</a>
+              <a href="Quest Board.html">QUESTS</a>
+              <a href="Character Sheet.html">ABOUT</a>
+              <a href="Achievement Cabinet.html">CERTS</a>
+              <a className="active" href="#">LOG</a>
+              <a href="Contact.html">CONTACT</a>
+            </nav>
+            <span className="save">◆ SAVED · 02:14</span>
+          </header>
+
+          <section className="head-wrap">
+            <div className="head-row">
+              <div>
+                <h1>▣ BATTLE LOG</h1>
+                <div className="sub">A running record of quests, launches, wins, and events.</div>
+              </div>
+              <span className="live"><span className="dot"></span>ACTIVE</span>
+            </div>
+          </section>
+
+          <div className="tabs" role="tablist">
+            {CATEGORIES.map(c => (
+              <button
+                key={c.key}
+                className={"tab " + (tab === c.key ? "active" : "")}
+                onClick={() => setTab(c.key)}
+                role="tab"
+                aria-selected={tab === c.key}
+              >
+                <span className="glyph" style={{color: c.color || "var(--text-muted)"}}>{c.glyph}</span>
+                {c.label}
+                <span className="badge">{counts[c.key] || 0}</span>
+              </button>
+            ))}
+          </div>
+
+          <main className="log-wrap">
+            <div
+              className="log"
+              style={{ opacity: phase === "out" ? 0 : 1, transition: "opacity 100ms ease" }}
+            >
+              <span className="spine" aria-hidden="true"></span>
+
+              {grouped.length === 0 && <div className="empty">No entries in this filter, adventurer.</div>}
+
+              {grouped.map((g, gi) => {
+                let entryIdx = 0;
+                // running index across whole list for stagger
+                const flatBefore = grouped.slice(0, gi).reduce((s, x) => s + x.items.length, 0);
+                return (
+                  <React.Fragment key={g.year}>
+                    <div className="year-divider"><span className="label">── {g.year} ──</span></div>
+                    {g.items.map((e, i) => (
+                      <Entry key={e.id} e={e} index={flatBefore + i} onOpen={setOpenEntry} />
+                    ))}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          </main>
+
+          {openEntry && <Modal entry={openEntry} onClose={() => setOpenEntry(null)} />}
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

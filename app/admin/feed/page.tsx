@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import FeedClient from "./FeedClient";
+import FeedClient from "@/components/admin/FeedClient";
 
 export default async function FeedPage() {
   const supabase = createClient();

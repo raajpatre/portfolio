@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { MapPin, GraduationCap, Users, BarChart3, Save, Download } from "lucide-react";
 import { origin, guild, factions, stats, saveFile } from "@/data/about";
-import { PixelButton } from "@/components/public/PixelButton";
+import { PixelButton } from "@/components/ui/PixelButton";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
