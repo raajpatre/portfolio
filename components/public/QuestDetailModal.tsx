@@ -63,7 +63,7 @@ export function QuestDetailModal({ project, onClose }: Props) {
       {project && (
         <motion.div
           key="modal-overlay"
-          className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-md"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 backdrop-blur-md"
           style={{ background: "rgba(10,12,26,0.86)" }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -74,7 +74,7 @@ export function QuestDetailModal({ project, onClose }: Props) {
           aria-modal="true"
         >
           <motion.div
-            className="w-full max-w-[1040px] max-h-[calc(100vh-48px)] bg-bg-surface border-2 rounded-sm flex flex-col overflow-hidden"
+            className="w-full max-w-[1040px] max-h-[calc(100dvh-24px)] sm:max-h-[calc(100vh-48px)] bg-bg-surface border-2 rounded-sm flex flex-col overflow-hidden"
             style={{
               borderColor: mcat,
               boxShadow: `0 0 28px ${mcat}, 0 0 0 1px ${mcat}`,
@@ -132,7 +132,7 @@ export function QuestDetailModal({ project, onClose }: Props) {
               {/* Carousel */}
               {photoCount > 0 && (
                 <div
-                  className="relative bg-bg-base border-b lg:border-b-0 lg:border-r border-border-pixel flex items-center justify-center overflow-hidden select-none min-h-[280px]"
+                  className="relative bg-bg-base border-b lg:border-b-0 lg:border-r border-border-pixel flex items-center justify-center overflow-hidden select-none min-h-[200px] sm:min-h-[280px]"
                   onMouseDown={(e) => onDown(e.clientX)}
                   onMouseUp={(e) => onUp(e.clientX)}
                   onTouchStart={(e) => onDown(e.touches[0].clientX)}
@@ -213,7 +213,7 @@ export function QuestDetailModal({ project, onClose }: Props) {
               )}
 
               {/* Text panel */}
-              <div className="p-5 sm:p-6 overflow-auto flex flex-col gap-3.5">
+              <div className="p-4 sm:p-6 overflow-auto flex flex-col gap-3">
                 <div
                   className="font-mono text-[14px] text-text-primary italic leading-[1.6] pl-3 border-l-2"
                   style={{ borderColor: mcat }}
