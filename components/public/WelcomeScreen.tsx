@@ -5,7 +5,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 
 const DIALOGUE_TEXT =
-  "Hey. I'm Raaj.\nBuilder. Breaker. Repeat.\n\nI build things for the web — and occasionally\nbreak them in interesting ways.";
+  "Ah, a new adventurer.\n\nI'm Raaj — I build for the web,\ncontribute to open source quests,\nand create content on the side.\n\nYou've found my quest log.\nMake yourself at home.";
 
 function Typewriter({ text, speed = 26, onDone }: { text: string; speed?: number; onDone?: () => void }) {
   const [i, setI] = useState(0);
