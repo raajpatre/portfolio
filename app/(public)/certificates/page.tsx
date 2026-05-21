@@ -14,7 +14,6 @@ export default async function CertificatesPage() {
 
   const list = certificates || [];
   const unlocked = list.filter((c) => !c.locked).length;
-  const locked = list.filter((c) => c.locked).length;
 
   return (
     <>
@@ -54,10 +53,9 @@ export default async function CertificatesPage() {
           >
             ★ ACHIEVEMENT CABINET ★
           </h1>
-          <p className="font-mono text-[13px] text-text-muted m-0">Proof of quests completed.</p>
           <span className="font-pixel text-[8px] text-accent-teal bg-accent-teal/12 shadow-[0_0_0_1px_#3dd6ac] px-2.5 py-1.5 tracking-[0.12em] rounded-sm inline-flex items-center gap-2 mt-1">
             <span className="w-1.5 h-1.5 bg-accent-teal shadow-[0_0_8px_#3dd6ac] animate-pulse inline-block" />
-            {unlocked} UNLOCKED · {locked} LOCKED
+            {unlocked} UNLOCKED
           </span>
         </div>
       </section>

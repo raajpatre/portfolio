@@ -36,7 +36,7 @@ const CATEGORY_TO_ICON: Record<NonNullable<CertificateData["category"]>, "book" 
 };
 
 export const CATEGORY_LABELS: Record<NonNullable<CertificateData["category"]>, string> = {
-  course: "COURSE · LEARNING",
+  course: "ACHIEVEMENT · LEARNING",
   program: "PROGRAM · COHORT",
   competition: "COMPETITION · HACKATHON",
 };
