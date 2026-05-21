@@ -65,44 +65,71 @@ export function BattleLog({ entries }: { entries: FeedEntryData[] }) {
 
   return (
     <div className="relative z-[1]">
-      {/* Tab bar — sticky under nav */}
-      <div className="sticky top-16 z-20 flex gap-1 flex-wrap px-5 sm:px-8 lg:px-16 border-b border-border-pixel bg-bg-base/78 backdrop-blur-md">
-        {TABS.map((t) => {
-          const isActive = tab === t.key;
-          const count = counts[t.key] ?? 0;
-          return (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              role="tab"
-              aria-selected={isActive}
-              className={cn(
-                "inline-flex items-center gap-2 px-3.5 py-3 font-mono text-[12px] tracking-[0.03em] border-b-2 transition-all duration-150 cursor-pointer",
-                isActive
-                  ? "text-text-primary border-accent-violet"
-                  : "text-text-muted border-transparent hover:text-text-primary"
-              )}
+      {/* Filter bar — sticky under nav */}
+      <div className="sticky top-16 z-20 border-b border-border-pixel bg-bg-base/78 backdrop-blur-md">
+        {/* Mobile: native select dropdown */}
+        <div className="sm:hidden px-5 py-3">
+          <label className="relative block">
+            <span className="sr-only">Filter battle log</span>
+            <select
+              value={tab}
+              onChange={(e) => setTab(e.target.value as TabKey)}
+              className="w-full appearance-none font-mono text-[13px] tracking-[0.03em] text-text-primary bg-bg-surface border-2 border-accent-violet shadow-[0_0_0_1px_#7c6df5] pl-3.5 pr-9 py-2.5 cursor-pointer focus:outline-none focus:shadow-[0_0_12px_#7c6df5,0_0_0_1px_#7c6df5]"
             >
-              <span
-                className="text-[11px]"
-                style={{ color: t.color || "#6b7094" }}
-              >
-                {t.glyph}
-              </span>
-              {t.label}
-              <span
+              {TABS.map((t) => (
+                <option key={t.key} value={t.key} className="bg-bg-surface text-text-primary">
+                  {t.glyph}  {t.label} ({counts[t.key] ?? 0})
+                </option>
+              ))}
+            </select>
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 font-pixel text-[9px] text-accent-violet"
+            >
+              ▼
+            </span>
+          </label>
+        </div>
+
+        {/* Desktop: tab bar */}
+        <div className="hidden sm:flex gap-1 flex-wrap px-5 sm:px-8 lg:px-16">
+          {TABS.map((t) => {
+            const isActive = tab === t.key;
+            const count = counts[t.key] ?? 0;
+            return (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                role="tab"
+                aria-selected={isActive}
                 className={cn(
-                  "font-mono text-[10px] bg-bg-elevated px-1.5 py-0.5 rounded-sm",
+                  "inline-flex items-center gap-2 px-3.5 py-3 font-mono text-[12px] tracking-[0.03em] border-b-2 transition-all duration-150 cursor-pointer",
                   isActive
-                    ? "text-accent-violet shadow-[0_0_0_1px_#7c6df5]"
-                    : "text-text-muted shadow-[0_0_0_1px_#2a2d4a]"
+                    ? "text-text-primary border-accent-violet"
+                    : "text-text-muted border-transparent hover:text-text-primary"
                 )}
               >
-                {count}
-              </span>
-            </button>
-          );
-        })}
+                <span
+                  className="text-[11px]"
+                  style={{ color: t.color || "#6b7094" }}
+                >
+                  {t.glyph}
+                </span>
+                {t.label}
+                <span
+                  className={cn(
+                    "font-mono text-[10px] bg-bg-elevated px-1.5 py-0.5 rounded-sm",
+                    isActive
+                      ? "text-accent-violet shadow-[0_0_0_1px_#7c6df5]"
+                      : "text-text-muted shadow-[0_0_0_1px_#2a2d4a]"
+                  )}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Timeline */}
