@@ -93,7 +93,7 @@ function StatCard({ origin, guild }: { origin: OriginData; guild: GuildEntry }) 
         <span className="font-pixel text-[8px] text-text-muted tracking-wider self-center uppercase">Status</span>
         <span className="font-mono text-sm text-text-primary self-center flex items-center gap-2">
           <span className="inline-block w-2 h-2 rounded-none bg-accent-teal shadow-[0_0_10px_#3dd6ac] animate-pulse" />
-          Available for quests
+          Available for Internship/Freelance
         </span>
 
         <span className="font-pixel text-[8px] text-text-muted tracking-wider self-center uppercase">Level</span>
