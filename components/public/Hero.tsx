@@ -85,7 +85,7 @@ function StatCard({ origin, guild }: { origin: OriginData; guild: GuildEntry }) 
       {/* Stat Rows */}
       <div className="grid grid-cols-[88px_1fr] gap-x-4 gap-y-2.5 px-4 py-4">
         <span className="font-pixel text-[8px] text-text-muted tracking-wider self-center uppercase">Class</span>
-        <span className="font-mono text-sm text-text-primary self-center">{origin.class.replace("FULL-STACK DEVELOPER", "Full-stack Dev")}</span>
+        <span className="font-mono text-sm text-text-primary self-center capitalize">{origin.class.toLowerCase()}</span>
 
         <span className="font-pixel text-[8px] text-text-muted tracking-wider self-center uppercase">Guild</span>
         <span className="font-mono text-sm text-text-primary self-center">{guild.institution}</span>

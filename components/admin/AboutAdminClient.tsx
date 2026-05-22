@@ -214,7 +214,7 @@ export default function AboutAdminClient({ initial }: Props) {
                 className={inputCls}
                 value={origin.class}
                 onChange={(e) => setOrigin({ ...origin, class: e.target.value })}
-                placeholder="FULL-STACK DEVELOPER"
+                placeholder="CSE STUDENT"
               />
             </Field>
             <Field label="Level">
