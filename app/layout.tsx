@@ -4,10 +4,10 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://raaj.me"),
-  title: "Raaj Patre — Builder. Breaker. Repeat.",
+  title: "Raaj Patre — Learn. Code. Repeat.",
   description: "A passionate full-stack developer who thrives at the intersection of design and engineering. Crafting pixel-perfect web experiences with a focus on performance, aesthetics, and scalable architecture.",
   openGraph: {
-    title: "Raaj Patre — Builder. Breaker. Repeat.",
+    title: "Raaj Patre — Learn. Code. Repeat.",
     description: "Crafting pixel-perfect web experiences.",
     url: "https://raaj.me",
     siteName: "Raaj Patre Portfolio",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Raaj Patre — Builder. Breaker. Repeat.",
+    title: "Raaj Patre — Learn. Code. Repeat.",
     description: "Crafting pixel-perfect web experiences.",
     images: ["/og.png"],
   },
